@@ -50,7 +50,6 @@
         }
         .conf-logo-img { height: 40px; width: auto; object-fit: contain; }
         
-        /* Fondos sutiles para conferencias */
         .afc-bg { background: linear-gradient(180deg, rgba(213, 10, 10, 0.1) 0%, rgba(18,18,18,0) 100%); border-top: 2px solid #d50a0a; }
         .nfc-bg { background: linear-gradient(180deg, rgba(1, 51, 105, 0.1) 0%, rgba(18,18,18,0) 100%); border-top: 2px solid #013369; }
 
@@ -64,8 +63,7 @@
         .team-row {
             display: flex; align-items: center; padding: 6px 8px; height: 48px;
             border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s;
-            user-select: none; /* EVITA QUE SE SELECCIONE EL TEXTO AL CLICKAR */
-            -webkit-user-select: none;
+            user-select: none; -webkit-user-select: none;
         }
         .team-row:last-child { border-bottom: none; }
 
@@ -83,6 +81,7 @@
         .team-row.read-selected .team-name { color: black; font-weight: 900; }
         .team-row.read-selected .team-seed { background: black; color: white; }
         .team-row.read-ignored { opacity: 0.3; filter: grayscale(100%); background: #111; } 
+        .winner-real { border-right: 4px solid #ffd700; } /* Indicador visual extra para ganadores reales */
 
         .ph-box { padding: 10px; text-align: center; color: #444; font-size: 0.65rem; border: 1px dashed #333; border-radius: 6px; margin-bottom: 5px; }
 
@@ -90,7 +89,7 @@
         .sb-grid { display: flex; justify-content: center; margin-top: 10px; }
         .sb-card { width: 100%; max-width: 320px; border: 2px solid #555; }
 
-        /* RANKING MEJORADO */
+        /* RANKING */
         .rank-row { background: var(--surface); padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #2a2a2a; }
         .rank-info { display: flex; align-items: center; gap: 12px; }
         .rank-pos { font-weight: 900; color: #555; width: 25px; font-size: 0.9rem; }
@@ -98,7 +97,7 @@
         .rank-champ-preview { width: 24px; height: 24px; border-radius: 50%; object-fit: contain; background: #333; padding: 2px; }
         .rank-pts { background: #333; padding: 4px 10px; border-radius: 4px; font-weight: 800; font-size: 0.85rem; color: var(--accent); }
 
-        /* NAV CON FONT AWESOME */
+        /* NAV */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: rgba(0,0,0,0.95); backdrop-filter: blur(5px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; }
         .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 6px; width: 33%; height: 100%; justify-content: center; transition: 0.2s;}
         .nav-item i { font-size: 1.2rem; margin-bottom: 2px; }
@@ -140,10 +139,17 @@
         <div id="tab-ranking" class="section active">
             <h4 style="text-align:center; color:#666; margin: 20px 0; text-transform: uppercase; letter-spacing: 1px;">Clasificación Global</h4>
             <div id="rankingList"></div>
-            <div style="text-align:center; font-size:0.7rem; color:#444; margin-top:20px; padding:10px; border-top:1px solid #333;">
-                <b>Reglas de Puntos:</b><br>
-                Wild Card: 1 pto | Divisional: 2 pts<br>
-                Conference: 3 pts | Super Bowl: 5 pts
+            <div style="text-align:center; font-size:0.75rem; color:#888; margin-top:20px; padding:15px; background:#1a1a1a; border-radius:8px; border:1px solid #333;">
+                <div style="margin-bottom:8px; font-weight:bold; color:white;">🎯 SISTEMA DE PUNTUACIÓN</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; text-align:left;">
+                    <div>Wild Card: <b style="color:var(--accent)">2 pts</b></div>
+                    <div>Emparejamiento: <b style="color:var(--accent)">1 pto</b></div>
+                    <div>Divisional: <b style="color:var(--accent)">3 pts</b></div>
+                    <div>Conference: <b style="color:var(--accent)">4 pts</b></div>
+                    <div style="grid-column: span 2; text-align:center; border-top:1px dashed #444; padding-top:5px; margin-top:5px;">
+                        Super Bowl: <b style="color:var(--accent)">5 pts</b>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -364,7 +370,6 @@
                 return { wc: WC_MATCHES, div, conf, sb, ch };
             },
 
-            // **** FUNCIÓN CORREGIDA PARA QUE FUNCIONEN LOS CLICS ****
             renderSplitBracket: (contId, src, mode) => {
                 const t = app.calcTree(src);
                 const c = document.getElementById(contId); c.innerHTML = '';
@@ -461,40 +466,75 @@
             renderRank: () => {
                 const l = document.getElementById('rankingList');
                 if(!state.db.users) { l.innerHTML="<div style='text-align:center;color:#555'>Sin datos</div>"; return; }
+                
                 const real = state.db.results || {};
                 const scores = [];
+                
+                // Calculamos el bracket real completo para comparar emparejamientos
+                const rt = app.calcTree(real);
+
                 Object.keys(state.db.users).forEach(u => {
                     const p = state.db.users[u].picks || {};
                     let pts = 0;
-                    const rt = app.calcTree(real);
+                    
+                    // Calculamos el bracket del usuario
                     const ut = app.calcTree(p);
 
-                    // Puntos
-                    WC_MATCHES.forEach(m=>{ if(real[m.id] && p[m.id]===real[m.id]) pts+=1; });
-                    const rDiv = rt.div.map(m=>[m.h,m.a]).flat().filter(Boolean); // Solo ganadores previos llegan
-                    // Simplificado: si tu ganador de div coincide con alguno de los 4 finalistas de conf reales
-                    const rConf = rt.conf.map(m=>[m.h,m.a]).flat().filter(Boolean);
-                    const uConf = ut.conf.map(m=>[m.h,m.a]).flat().filter(Boolean);
-                    rConf.forEach(t=>{ if(uConf.includes(t)) pts+=2; });
+                    // 1. WILD CARD (2 puntos por ganador) - No hay puntos de emparejamiento (son fijos)
+                    WC_MATCHES.forEach(m => { 
+                        if(real[m.id] && p[m.id] === real[m.id]) pts += 2; 
+                    });
 
-                    const rSB = [rt.sb.h, rt.sb.a].filter(Boolean);
-                    const uSB = [ut.sb.h, ut.sb.a].filter(Boolean);
-                    rSB.forEach(t=>{ if(uSB.includes(t)) pts+=3; });
+                    // FUNCIÓN HELPER PARA CHEQUEAR EMPAREJAMIENTOS
+                    // Devuelve true si los equipos son los mismos, sin importar el orden
+                    const checkMatchup = (realMatch, userMatch) => {
+                        if(!realMatch || !userMatch || realMatch.ph || userMatch.ph) return false;
+                        const rTeams = [realMatch.h, realMatch.a].sort().join('-');
+                        const uTeams = [userMatch.h, userMatch.a].sort().join('-');
+                        return rTeams === uTeams;
+                    };
 
-                    if(rt.ch && ut.ch===rt.ch) pts+=5;
+                    // 2. DIVISIONAL
+                    // Ganador: 3 pts | Emparejamiento: 1 pto
+                    rt.div.forEach(rM => {
+                        const uM = ut.div.find(m => m.id === rM.id);
+                        
+                        // Chequeo Emparejamiento (1 pto)
+                        if(checkMatchup(rM, uM)) pts += 1;
+
+                        // Chequeo Ganador (3 pts)
+                        // Si el usuario acertó el ganador de este partido específico (match ID)
+                        if(real[rM.id] && p[rM.id] === real[rM.id]) pts += 3;
+                    });
+
+                    // 3. CONFERENCE
+                    // Ganador: 4 pts | Emparejamiento: 1 pto
+                    rt.conf.forEach(rM => {
+                        const uM = ut.conf.find(m => m.id === rM.id);
+                        
+                        if(checkMatchup(rM, uM)) pts += 1;
+                        if(real[rM.id] && p[rM.id] === real[rM.id]) pts += 4;
+                    });
+
+                    // 4. SUPER BOWL
+                    // Ganador: 5 pts | Emparejamiento: 1 pto
+                    const rSB = rt.sb;
+                    const uSB = ut.sb;
+                    
+                    if(checkMatchup(rSB, uSB)) pts += 1;
+                    if(rt.ch && ut.ch === rt.ch) pts += 5;
 
                     // CAMPEÓN ELEGIDO POR EL USUARIO (para mostrarlo)
                     const userWinner = ut.ch;
-
                     scores.push({name:u, pts, winner: userWinner});
                 });
-                scores.sort((a,b)=>b.pts-a.pts);
+                
+                scores.sort((a,b) => b.pts - a.pts);
                 
                 l.innerHTML='';
                 scores.forEach((s,i)=>{
                     const d=document.createElement('div'); d.className='rank-row';
                     
-                    // Lógica para mostrar logo del campeón elegido
                     let champHtml = '';
                     if(s.winner && TEAMS[s.winner]) {
                         champHtml = `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview" alt="${s.winner}">`;
