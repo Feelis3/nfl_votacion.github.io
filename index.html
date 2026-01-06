@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NFL 2026 Playoffs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --border: #333;
+            --text-main: #e0e0e0;
+            --text-sub: #a0a0a0;
+            --accent: #00e676; /* Verde Neon */
+            --danger: #ff5252;
+            --nav-height: 60px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text-main); padding-bottom: calc(var(--nav-height) + 20px); }
+
+        /* HEADER REDISEÑADO */
+        header {
+            background: rgba(18, 18, 18, 0.98); backdrop-filter: blur(10px);
+            padding: 15px; position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-weight: 900; font-size: 1.1rem; letter-spacing: 1px; color: white; text-transform: uppercase; display: flex; align-items: center; gap: 8px;}
+        
+        .user-panel { display: flex; align-items: center; gap: 15px; }
+        .user-name { font-weight: 700; color: white; font-size: 0.9rem; border-right: 1px solid #444; padding-right: 15px; }
+        .logout-btn { background: none; border: none; color: var(--text-sub); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; }
+        .auth-btn { background: white; color: black; border: none; padding: 6px 15px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+
+        /* LAYOUT */
+        .container { max-width: 800px; margin: 0 auto; padding: 10px; }
+        .section { display: none; animation: fadeIn 0.3s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+
+        /* BRACKET SYSTEM */
+        .conf-header-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .conf-badge { 
+            padding: 10px; text-align: center; border-radius: 6px; 
+            display: flex; justify-content: center; align-items: center;
+            background: #1a1a1a; border: 1px solid #333;
+        }
+        .conf-logo-img { height: 40px; width: auto; object-fit: contain; }
+        
+        /* Fondos sutiles para conferencias */
+        .afc-bg { background: linear-gradient(180deg, rgba(213, 10, 10, 0.1) 0%, rgba(18,18,18,0) 100%); border-top: 2px solid #d50a0a; }
+        .nfc-bg { background: linear-gradient(180deg, rgba(1, 51, 105, 0.1) 0%, rgba(18,18,18,0) 100%); border-top: 2px solid #013369; }
+
+        .round-wrapper { margin-bottom: 25px; }
+        .round-title { text-align: center; color: var(--text-sub); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 800; }
+        
+        .matches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } 
+        
+        .match-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: flex; flex-direction: column; }
+        
+        .team-row {
+            display: flex; align-items: center; padding: 6px 8px; height: 48px;
+            border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s;
+            user-select: none; /* EVITA QUE SE SELECCIONE EL TEXTO AL CLICKAR */
+            -webkit-user-select: none;
+        }
+        .team-row:last-child { border-bottom: none; }
+
+        .team-seed { background: #333; color: #aaa; font-size: 0.65rem; font-weight: bold; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 4px; margin-right: 6px; flex-shrink: 0;}
+        .team-logo { width: 24px; height: 24px; object-fit: contain; margin-right: 6px; flex-shrink: 0; }
+        .team-name { font-size: 0.8rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ESTADOS DE SELECCIÓN */
+        .team-row.selected { background: rgba(0, 230, 118, 0.15); border-left: 3px solid var(--accent); }
+        .team-row.selected .team-name { color: var(--accent); }
+        .team-row.selected .team-seed { background: var(--accent); color: black; }
+
+        /* ESTADOS DE VISUALIZACIÓN */
+        .team-row.read-selected { background: var(--accent); border-left: 3px solid white; opacity: 1; }
+        .team-row.read-selected .team-name { color: black; font-weight: 900; }
+        .team-row.read-selected .team-seed { background: black; color: white; }
+        .team-row.read-ignored { opacity: 0.3; filter: grayscale(100%); background: #111; } 
+
+        .ph-box { padding: 10px; text-align: center; color: #444; font-size: 0.65rem; border: 1px dashed #333; border-radius: 6px; margin-bottom: 5px; }
+
+        /* SUPER BOWL */
+        .sb-grid { display: flex; justify-content: center; margin-top: 10px; }
+        .sb-card { width: 100%; max-width: 320px; border: 2px solid #555; }
+
+        /* RANKING MEJORADO */
+        .rank-row { background: var(--surface); padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #2a2a2a; }
+        .rank-info { display: flex; align-items: center; gap: 12px; }
+        .rank-pos { font-weight: 900; color: #555; width: 25px; font-size: 0.9rem; }
+        .rank-name { font-weight: 700; color: white; font-size: 0.95rem; }
+        .rank-champ-preview { width: 24px; height: 24px; border-radius: 50%; object-fit: contain; background: #333; padding: 2px; }
+        .rank-pts { background: #333; padding: 4px 10px; border-radius: 4px; font-weight: 800; font-size: 0.85rem; color: var(--accent); }
+
+        /* NAV CON FONT AWESOME */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: rgba(0,0,0,0.95); backdrop-filter: blur(5px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; }
+        .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 6px; width: 33%; height: 100%; justify-content: center; transition: 0.2s;}
+        .nav-item i { font-size: 1.2rem; margin-bottom: 2px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.active i { transform: scale(1.1); }
+
+        /* MODALES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; backdrop-filter: blur(5px); justify-content: center; align-items: center; }
+        .login-box { background: #222; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #444; }
+        .login-input { background: #333; border: 1px solid #555; padding: 12px; border-radius: 8px; color: white; width: 100%; margin-bottom: 20px; text-align: center; font-size: 1rem; }
+        .btn-full { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 800; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,230,118,0.3); }
+
+        .full-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: none; overflow-y: auto; }
+        .modal-nav-bar { position: sticky; top: 0; left: 0; width: 100%; height: 60px; background: #000; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 50; }
+        .modal-back-btn { background: none; border: none; color: var(--accent); font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 8px; }
+        .modal-title-text { font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
+        
+        .fab { position: fixed; bottom: 80px; right: 20px; background: var(--accent); color: black; padding: 12px 25px; border-radius: 50px; font-weight: 900; border: none; box-shadow: 0 4px 20px rgba(0,230,118,0.4); z-index: 100; display: none; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+
+        @media (max-width: 480px) {
+            .team-name { font-size: 0.75rem; }
+            .team-logo { width: 22px; height: 22px; }
+            .team-row { padding: 4px 6px; height: 42px; }
+            .matches-grid { gap: 6px; }
+            .team-seed { width: 18px; height: 18px; font-size: 0.6rem; }
+            .container { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"><i class="fa-solid fa-football"></i> PLAYOFFS</div>
+        <div id="authContainer"></div>
+    </header>
+
+    <div class="container">
+        
+        <div id="tab-ranking" class="section active">
+            <h4 style="text-align:center; color:#666; margin: 20px 0; text-transform: uppercase; letter-spacing: 1px;">Clasificación Global</h4>
+            <div id="rankingList"></div>
+            <div style="text-align:center; font-size:0.7rem; color:#444; margin-top:20px; padding:10px; border-top:1px solid #333;">
+                <b>Reglas de Puntos:</b><br>
+                Wild Card: 1 pto | Divisional: 2 pts<br>
+                Conference: 3 pts | Super Bowl: 5 pts
+            </div>
+        </div>
+
+        <div id="tab-vote" class="section">
+            <div id="guestMsg" style="text-align:center; padding:15px; background:#222; border-radius:8px; margin-bottom:15px; display:none; border:1px solid #333;">
+                <p style="color:#aaa; margin-bottom:10px; font-size:0.9rem;">Estás en modo invitado.</p>
+                <button class="btn-full" onclick="app.showLogin()" style="max-width:100%; padding:8px;">Iniciar Sesión</button>
+            </div>
+
+            <div class="conf-header-row">
+                <div class="conf-badge afc-bg">
+                    <img src="https://a.espncdn.com/i/teamlogos/nfl/500/afc.png" class="conf-logo-img" alt="AFC">
+                </div>
+                <div class="conf-badge nfc-bg">
+                    <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png" class="conf-logo-img" alt="NFC">
+                </div>
+            </div>
+            
+            <div id="voteBracket"></div>
+            <button class="fab" id="saveBtn" onclick="app.savePicks()" style="display:none">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar
+            </button>
+        </div>
+
+        <div id="tab-admin" class="section">
+            <div style="background:#222; padding:20px; border-radius:10px; margin-bottom:20px;">
+                <input type="password" id="adminPass" class="login-input" placeholder="Contraseña Admin">
+                <button class="btn-full" onclick="app.adminLogin()">Gestionar Resultados</button>
+            </div>
+            <div id="adminPanel" style="display:none;">
+                <h4 style="text-align:center;">RESULTADOS REALES</h4>
+                <div id="adminBracket"></div>
+                <button class="btn-full" style="margin-top:20px; background:#e0e0e0; color:black;" onclick="app.adminSave()">PUBLICAR OFICIALES</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewModal" class="full-modal">
+        <div class="modal-nav-bar">
+            <button class="modal-back-btn" onclick="document.getElementById('viewModal').style.display='none'">
+                <i class="fa-solid fa-arrow-left"></i> Volver
+            </button>
+            <span class="modal-title-text" id="viewModalTitle">NOMBRE</span>
+            <div style="width:50px;"></div>
+        </div>
+        <div class="container">
+            <div class="conf-header-row" style="margin-top:10px;">
+                <div class="conf-badge afc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/afc.png" class="conf-logo-img"></div>
+                <div class="conf-badge nfc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png" class="conf-logo-img"></div>
+            </div>
+            <div id="viewModalBody"></div>
+            <div style="height: 50px;"></div>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal-overlay">
+        <div class="login-box">
+            <h2 style="margin-top:0; color:white;">Bienvenido</h2>
+            <p style="color:#aaa; font-size:0.9rem; margin-bottom:20px;">Escribe tu nombre para participar.</p>
+            <input type="text" id="usernameInput" class="login-input" placeholder="Tu Nombre">
+            <button class="btn-full" onclick="app.doLogin()">ENTRAR</button>
+            <button onclick="document.getElementById('loginModal').style.display='none'" style="background:none; border:none; color:#666; margin-top:15px; cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="app.nav('ranking')">
+            <i class="fa-solid fa-trophy"></i>
+            <span>Ranking</span>
+        </button>
+        <button class="nav-item" onclick="app.nav('vote')">
+            <i class="fa-solid fa-list-ol"></i>
+            <span>Quiniela</span>
+        </button>
+        <button class="nav-item" onclick="app.nav('admin')">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>Admin</span>
+        </button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const db = getDatabase(initializeApp({
+            apiKey: "AIzaSyCRoM4Fuz5eGGnXSwNYRn-nf8oII_ulLuQ",
+            authDomain: "mentiroso-marcos-perez.firebaseapp.com",
+            databaseURL: "https://mentiroso-marcos-perez-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "mentiroso-marcos-perez",
+            storageBucket: "mentiroso-marcos-perez.firebasestorage.app",
+            messagingSenderId: "968925541268",
+            appId: "1:968925541268:web:97a255db8eeff952b71581"
+        }));
+
+        const TEAMS = {
+            "Broncos": { s:1, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png" },
+            "Patriots": { s:2, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" },
+            "Jaguars": { s:3, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" },
+            "Steelers": { s:4, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" },
+            "Texans": { s:5, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" },
+            "Bills": { s:6, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" },
+            "Chargers": { s:7, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png" },
+            "Seahawks": { s:1, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" },
+            "Bears": { s:2, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" },
+            "Eagles": { s:3, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" },
+            "Panthers": { s:4, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png" },
+            "Rams": { s:5, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" },
+            "49ers": { s:6, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" },
+            "Packers": { s:7, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" }
+        };
+
+        const WC_MATCHES = [
+            { id: "a1", h: "Patriots", a: "Chargers" }, { id: "a2", h: "Jaguars", a: "Bills" }, { id: "a3", h: "Steelers", a: "Texans" },
+            { id: "n1", h: "Bears", a: "Packers" }, { id: "n2", h: "Eagles", a: "49ers" }, { id: "n3", h: "Panthers", a: "Rams" }
+        ];
+
+        let state = { user: localStorage.getItem('nfl_final_v3_user'), db: {}, picks: {}, admin: {} };
+
+        window.app = {
+            init: () => {
+                onValue(ref(db), snap => {
+                    state.db = snap.val() || {};
+                    app.ui();
+                });
+            },
+            ui: () => {
+                const ac = document.getElementById('authContainer');
+                if(state.user) {
+                    ac.innerHTML = `
+                        <div class="user-panel">
+                            <span class="user-name">${state.user}</span>
+                            <button class="logout-btn" onclick="app.logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+                        </div>`;
+                    
+                    if(state.db.users && state.db.users[state.user]) {
+                        state.picks = state.db.users[state.user].picks ? JSON.parse(JSON.stringify(state.db.users[state.user].picks)) : {};
+                    }
+                    
+                    document.getElementById('saveBtn').style.display = 'flex';
+                    document.getElementById('guestMsg').style.display = 'none';
+                    app.renderSplitBracket('voteBracket', state.picks, 'edit');
+                } else {
+                    ac.innerHTML = `<button class="auth-btn" onclick="app.showLogin()">ENTRAR</button>`;
+                    document.getElementById('saveBtn').style.display = 'none';
+                    document.getElementById('guestMsg').style.display = 'block';
+                    app.renderSplitBracket('voteBracket', {}, 'guest'); 
+                }
+                app.renderRank();
+            },
+            
+            showLogin: () => document.getElementById('loginModal').style.display = 'flex',
+            doLogin: () => {
+                const u = document.getElementById('usernameInput').value.trim();
+                if(u) {
+                    state.user = u; localStorage.setItem('nfl_final_v3_user', u);
+                    document.getElementById('loginModal').style.display = 'none';
+                    app.ui();
+                }
+            },
+            logout: () => {
+                localStorage.removeItem('nfl_final_v3_user');
+                state.user = null; state.picks = {};
+                app.ui();
+            },
+            nav: (id) => {
+                document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
+                document.getElementById('tab-'+id).classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+            },
+            savePicks: () => {
+                if(!state.user) return app.showLogin();
+                set(ref(db, `users/${state.user}`), {picks:state.picks, timestamp:Date.now()})
+                .then(()=>alert("¡Quiniela Guardada!"));
+            },
+
+            calcTree: (picksSource) => {
+                const p = picksSource || {};
+                let wc = {A:[], N:[]};
+                WC_MATCHES.forEach(m => { if(p[m.id]) wc[TEAMS[p[m.id]].c].push(p[m.id]); });
+
+                let div = [];
+                ['A', 'N'].forEach(c => {
+                    if(wc[c].length === 3) {
+                        const s1 = Object.keys(TEAMS).find(t => TEAMS[t].c === c && TEAMS[t].s === 1);
+                        let pool = [s1, ...wc[c]].sort((a,b) => TEAMS[a].s - TEAMS[b].s);
+                        div.push({ id:`${c}d1`, h:pool[0], a:pool[3], c:c });
+                        div.push({ id:`${c}d2`, h:pool[1], a:pool[2], c:c });
+                    } else {
+                        div.push({ id:`${c}d1`, ph:true, c:c }, { id:`${c}d2`, ph:true, c:c });
+                    }
+                });
+
+                let conf = [];
+                let divWinners = {A:[], N:[]};
+                div.forEach(match => { 
+                    if(!match.ph && p[match.id] && (p[match.id] === match.h || p[match.id] === match.a)) {
+                        divWinners[match.c].push(p[match.id]);
+                    }
+                });
+                ['A', 'N'].forEach(c => {
+                    if(divWinners[c].length === 2) {
+                        let sorted = divWinners[c].sort((a,b) => TEAMS[a].s - TEAMS[b].s);
+                        conf.push({ id:`${c}c`, h:sorted[0], a:sorted[1], c:c });
+                    } else conf.push({ id:`${c}c`, ph:true, c:c });
+                });
+
+                let sb = { id:'sb', ph:true };
+                const matchA = conf.find(m => m.c === 'A');
+                const matchN = conf.find(m => m.c === 'N');
+                const aChamp = (matchA && !matchA.ph && p[matchA.id] && (p[matchA.id]===matchA.h || p[matchA.id]===matchA.a)) ? p[matchA.id] : null;
+                const nChamp = (matchN && !matchN.ph && p[matchN.id] && (p[matchN.id]===matchN.h || p[matchN.id]===matchN.a)) ? p[matchN.id] : null;
+
+                if(aChamp && nChamp) sb = { id:'sb', h:aChamp, a:nChamp };
+                let ch = null;
+                if(!sb.ph && p['sb'] && (p['sb']===sb.h || p['sb']===sb.a)) ch = p['sb'];
+
+                return { wc: WC_MATCHES, div, conf, sb, ch };
+            },
+
+            // **** FUNCIÓN CORREGIDA PARA QUE FUNCIONEN LOS CLICS ****
+            renderSplitBracket: (contId, src, mode) => {
+                const t = app.calcTree(src);
+                const c = document.getElementById(contId); c.innerHTML = '';
+                const rounds = [{ t: 'Wild Card', d: t.wc }, { t: 'Divisional', d: t.div }, { t: 'Conference', d: t.conf }];
+
+                rounds.forEach(rnd => {
+                    const w = document.createElement('div'); w.className = 'round-wrapper';
+                    w.innerHTML = `<div class="round-title">${rnd.t}</div>`;
+                    const g = document.createElement('div'); g.className = 'matches-grid';
+                    const colA = document.createElement('div');
+                    const colN = document.createElement('div');
+
+                    rnd.d.forEach(m => {
+                        let isAFC = false;
+                        if(m.ph) isAFC = (m.c === 'A'); else isAFC = (TEAMS[m.h].c === 'A');
+                        const target = isAFC ? colA : colN;
+
+                        if(m.ph) {
+                            const ph = document.createElement('div'); ph.className = 'ph-box'; ph.innerText = 'Esperando...';
+                            target.appendChild(ph);
+                        } else {
+                            const card = document.createElement('div'); card.className = 'match-card';
+                            [m.h, m.a].forEach(tm => {
+                                const dat = TEAMS[tm];
+                                const sel = src[m.id] === tm;
+                                const real = mode==='read' && state.db.results && state.db.results[m.id] === tm;
+                                const r = document.createElement('div');
+                                let classes = 'team-row ';
+                                if(mode==='read') { if(sel) classes += 'read-selected '; else classes += 'read-ignored '; } 
+                                else if(mode==='edit' || mode==='admin') { if(sel) classes += 'selected '; }
+                                if(real) classes += 'winner-real ';
+                                
+                                r.className = classes;
+                                r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>`;
+                                
+                                if(mode!=='read' && mode!=='guest') {
+                                    r.onclick = () => { src[m.id]=tm; app.renderSplitBracket(contId, src, mode); };
+                                }
+                                card.appendChild(r);
+                            });
+                            target.appendChild(card);
+                        }
+                    });
+                    g.appendChild(colA); g.appendChild(colN); w.appendChild(g); c.appendChild(w);
+                });
+
+                const w = document.createElement('div'); w.className='round-wrapper';
+                w.innerHTML = `<div class="round-title">Super Bowl</div>`;
+                const sg = document.createElement('div'); sg.className='sb-grid';
+                
+                if(t.sb.ph) {
+                    const ph = document.createElement('div'); ph.className = 'ph-box'; ph.style.width='100%'; ph.innerText = 'Esperando...';
+                    sg.appendChild(ph);
+                } else {
+                    const card = document.createElement('div'); card.className='match-card sb-card';
+                    [t.sb.h, t.sb.a].forEach(tm => {
+                        const dat = TEAMS[tm];
+                        const sel = src.sb === tm;
+                        const r = document.createElement('div');
+                        let classes = 'team-row ';
+                        if(mode==='read') { if(sel) classes+='read-selected '; else classes+='read-ignored '; }
+                        else if(mode==='edit'||mode==='admin') { if(sel) classes+='selected '; }
+                        r.className = classes;
+                        r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>`;
+                        if(mode!=='read' && mode!=='guest') {
+                            r.onclick=()=>{ src.sb=tm; app.renderSplitBracket(contId, src, mode); };
+                        }
+                        card.appendChild(r);
+                    });
+                    sg.appendChild(card);
+                }
+                w.appendChild(sg); c.appendChild(w);
+
+                if(t.ch) {
+                    const dat = TEAMS[t.ch];
+                    const winDiv = document.createElement('div');
+                    winDiv.style.cssText = "text-align:center; margin-top:20px; border:1px solid #333; padding:20px; border-radius:10px;";
+                    winDiv.innerHTML = `<small style="color:#666">CAMPEÓN</small><br><img src="${dat.logo}" style="width:60px; margin-top:10px;"><h2 style="margin:5px 0; color:white">${t.ch}</h2>`;
+                    c.appendChild(winDiv);
+                }
+            },
+
+            adminLogin:()=>{
+                if(document.getElementById('adminPass').value==='123Marcos') {
+                    document.getElementById('adminPanel').style.display='block';
+                    state.admin = state.db.results || {};
+                    app.renderSplitBracket('adminBracket', state.admin, 'admin');
+                }
+            },
+            adminSave:()=>{
+                if(confirm("¿Publicar Resultados?")) set(ref(db,'results'), state.admin);
+            },
+
+            renderRank: () => {
+                const l = document.getElementById('rankingList');
+                if(!state.db.users) { l.innerHTML="<div style='text-align:center;color:#555'>Sin datos</div>"; return; }
+                const real = state.db.results || {};
+                const scores = [];
+                Object.keys(state.db.users).forEach(u => {
+                    const p = state.db.users[u].picks || {};
+                    let pts = 0;
+                    const rt = app.calcTree(real);
+                    const ut = app.calcTree(p);
+
+                    // Puntos
+                    WC_MATCHES.forEach(m=>{ if(real[m.id] && p[m.id]===real[m.id]) pts+=1; });
+                    const rDiv = rt.div.map(m=>[m.h,m.a]).flat().filter(Boolean); // Solo ganadores previos llegan
+                    // Simplificado: si tu ganador de div coincide con alguno de los 4 finalistas de conf reales
+                    const rConf = rt.conf.map(m=>[m.h,m.a]).flat().filter(Boolean);
+                    const uConf = ut.conf.map(m=>[m.h,m.a]).flat().filter(Boolean);
+                    rConf.forEach(t=>{ if(uConf.includes(t)) pts+=2; });
+
+                    const rSB = [rt.sb.h, rt.sb.a].filter(Boolean);
+                    const uSB = [ut.sb.h, ut.sb.a].filter(Boolean);
+                    rSB.forEach(t=>{ if(uSB.includes(t)) pts+=3; });
+
+                    if(rt.ch && ut.ch===rt.ch) pts+=5;
+
+                    // CAMPEÓN ELEGIDO POR EL USUARIO (para mostrarlo)
+                    const userWinner = ut.ch;
+
+                    scores.push({name:u, pts, winner: userWinner});
+                });
+                scores.sort((a,b)=>b.pts-a.pts);
+                
+                l.innerHTML='';
+                scores.forEach((s,i)=>{
+                    const d=document.createElement('div'); d.className='rank-row';
+                    
+                    // Lógica para mostrar logo del campeón elegido
+                    let champHtml = '';
+                    if(s.winner && TEAMS[s.winner]) {
+                        champHtml = `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview" alt="${s.winner}">`;
+                    } else {
+                        champHtml = `<div class="rank-champ-preview" style="background:transparent"></div>`;
+                    }
+
+                    d.innerHTML=`
+                        <div class="rank-info">
+                            <span class="rank-pos">#${i+1}</span>
+                            <span class="rank-name">${s.name}</span>
+                            ${champHtml}
+                        </div>
+                        <span class="rank-pts">${s.pts} pts</span>
+                    `;
+                    d.onclick = () => {
+                        document.getElementById('viewModal').style.display='block';
+                        document.getElementById('viewModalTitle').innerText = s.name;
+                        app.renderSplitBracket('viewModalBody', state.db.users[s.name].picks || {}, 'read');
+                    };
+                    l.appendChild(d);
+                });
+            }
+        };
+        app.init();
+    </script>
+</body>
+</html>
