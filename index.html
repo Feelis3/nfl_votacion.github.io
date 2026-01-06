@@ -15,21 +15,32 @@
             --text-sub: #a0a0a0;
             --accent: #00e676; /* Verde Neon */
             --danger: #ff5252;
+            --locked: #ff9800;
             --nav-height: 60px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text-main); padding-bottom: calc(var(--nav-height) + 20px); }
 
-        /* HEADER REDISEÑADO */
+        /* HEADER */
         header {
             background: rgba(18, 18, 18, 0.98); backdrop-filter: blur(10px);
-            padding: 15px; position: sticky; top: 0; z-index: 100;
+            padding: 10px 15px; position: sticky; top: 0; z-index: 100;
             border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; flex-direction: column; gap: 8px;
         }
+        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .logo { font-weight: 900; font-size: 1.1rem; letter-spacing: 1px; color: white; text-transform: uppercase; display: flex; align-items: center; gap: 8px;}
         
+        /* CUENTA ATRÁS */
+        .countdown-bar {
+            font-size: 0.75rem; text-align: center; color: var(--accent);
+            background: rgba(0, 230, 118, 0.1); padding: 5px; border-radius: 4px;
+            font-weight: 700; border: 1px solid rgba(0, 230, 118, 0.2);
+            width: 100%;
+        }
+        .countdown-bar.expired { color: var(--danger); background: rgba(255, 82, 82, 0.1); border-color: rgba(255, 82, 82, 0.2); }
+
         .user-panel { display: flex; align-items: center; gap: 15px; }
         .user-name { font-weight: 700; color: white; font-size: 0.9rem; border-right: 1px solid #444; padding-right: 15px; }
         .logout-btn { background: none; border: none; color: var(--text-sub); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; }
@@ -66,6 +77,10 @@
             user-select: none; -webkit-user-select: none;
         }
         .team-row:last-child { border-bottom: none; }
+        
+        /* ESTADO BLOQUEADO (LOCKED) */
+        .team-row.locked { cursor: not-allowed; opacity: 0.6; }
+        .team-row.locked:hover { background: transparent; }
 
         .team-seed { background: #333; color: #aaa; font-size: 0.65rem; font-weight: bold; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 4px; margin-right: 6px; flex-shrink: 0;}
         .team-logo { width: 24px; height: 24px; object-fit: contain; margin-right: 6px; flex-shrink: 0; }
@@ -81,7 +96,7 @@
         .team-row.read-selected .team-name { color: black; font-weight: 900; }
         .team-row.read-selected .team-seed { background: black; color: white; }
         .team-row.read-ignored { opacity: 0.3; filter: grayscale(100%); background: #111; } 
-        .winner-real { border-right: 4px solid #ffd700; } /* Indicador visual extra para ganadores reales */
+        .winner-real { border-right: 4px solid #ffd700; }
 
         .ph-box { padding: 10px; text-align: center; color: #444; font-size: 0.65rem; border: 1px dashed #333; border-radius: 6px; margin-bottom: 5px; }
 
@@ -116,6 +131,7 @@
         .modal-title-text { font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
         
         .fab { position: fixed; bottom: 80px; right: 20px; background: var(--accent); color: black; padding: 12px 25px; border-radius: 50px; font-weight: 900; border: none; box-shadow: 0 4px 20px rgba(0,230,118,0.4); z-index: 100; display: none; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .fab.disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
 
         @media (max-width: 480px) {
             .team-name { font-size: 0.75rem; }
@@ -130,8 +146,11 @@
 <body>
 
     <header>
-        <div class="logo"><i class="fa-solid fa-football"></i> PLAYOFFS</div>
-        <div id="authContainer"></div>
+        <div class="header-top">
+            <div class="logo"><i class="fa-solid fa-football"></i> PLAYOFFS</div>
+            <div id="authContainer"></div>
+        </div>
+        <div id="countdown" class="countdown-bar">Cargando...</div>
     </header>
 
     <div class="container">
@@ -266,6 +285,9 @@
             { id: "n1", h: "Bears", a: "Packers" }, { id: "n2", h: "Eagles", a: "49ers" }, { id: "n3", h: "Panthers", a: "Rams" }
         ];
 
+        // FECHA LÍMITE: Sábado 10 Enero 2026, 22:30 Hora España (GMT+1)
+        const DEADLINE = new Date("2026-01-10T22:30:00+01:00").getTime();
+
         let state = { user: localStorage.getItem('nfl_final_v3_user'), db: {}, picks: {}, admin: {} };
 
         window.app = {
@@ -274,7 +296,33 @@
                     state.db = snap.val() || {};
                     app.ui();
                 });
+                // Iniciar contador
+                setInterval(app.updateCountdown, 1000);
+                app.updateCountdown();
             },
+
+            // Comprueba si ya pasó la fecha
+            isLocked: () => Date.now() > DEADLINE,
+
+            updateCountdown: () => {
+                const now = Date.now();
+                const diff = DEADLINE - now;
+                const el = document.getElementById('countdown');
+                
+                if (diff <= 0) {
+                    el.innerText = "🔒 QUINIELA CERRADA";
+                    el.classList.add('expired');
+                    if(!app.wasLocked) { app.wasLocked = true; app.ui(); }
+                } else {
+                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+                    el.innerText = `⏳ CIERRA EN: ${d}d ${h}h ${m}m ${s}s`;
+                    el.classList.remove('expired');
+                }
+            },
+
             ui: () => {
                 const ac = document.getElementById('authContainer');
                 if(state.user) {
@@ -288,9 +336,24 @@
                         state.picks = state.db.users[state.user].picks ? JSON.parse(JSON.stringify(state.db.users[state.user].picks)) : {};
                     }
                     
-                    document.getElementById('saveBtn').style.display = 'flex';
+                    // Lógica del botón guardar (Bloqueado si pasó la fecha)
+                    const saveBtn = document.getElementById('saveBtn');
+                    if(app.isLocked()) {
+                        saveBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Cerrado';
+                        saveBtn.classList.add('disabled');
+                        saveBtn.style.display = 'flex';
+                        saveBtn.onclick = null;
+                    } else {
+                        saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar';
+                        saveBtn.classList.remove('disabled');
+                        saveBtn.style.display = 'flex';
+                        saveBtn.onclick = app.savePicks;
+                    }
+                    
                     document.getElementById('guestMsg').style.display = 'none';
-                    app.renderSplitBracket('voteBracket', state.picks, 'edit');
+                    // Si está cerrado, renderiza en modo 'read' (solo lectura)
+                    const mode = app.isLocked() ? 'read' : 'edit';
+                    app.renderSplitBracket('voteBracket', state.picks, mode);
                 } else {
                     ac.innerHTML = `<button class="auth-btn" onclick="app.showLogin()">ENTRAR</button>`;
                     document.getElementById('saveBtn').style.display = 'none';
@@ -321,6 +384,7 @@
                 event.currentTarget.classList.add('active');
             },
             savePicks: () => {
+                if(app.isLocked()) { alert("La quiniela está cerrada."); return; }
                 if(!state.user) return app.showLogin();
                 set(ref(db, `users/${state.user}`), {picks:state.picks, timestamp:Date.now()})
                 .then(()=>alert("¡Quiniela Guardada!"));
@@ -374,6 +438,9 @@
                 const t = app.calcTree(src);
                 const c = document.getElementById(contId); c.innerHTML = '';
                 const rounds = [{ t: 'Wild Card', d: t.wc }, { t: 'Divisional', d: t.div }, { t: 'Conference', d: t.conf }];
+                
+                // Si estamos editando y NO está bloqueado, permitimos editar
+                const canEdit = (mode === 'edit' && !app.isLocked());
 
                 rounds.forEach(rnd => {
                     const w = document.createElement('div'); w.className = 'round-wrapper';
@@ -401,11 +468,13 @@
                                 if(mode==='read') { if(sel) classes += 'read-selected '; else classes += 'read-ignored '; } 
                                 else if(mode==='edit' || mode==='admin') { if(sel) classes += 'selected '; }
                                 if(real) classes += 'winner-real ';
+                                // Si no se puede editar (y no es admin), añadimos clase locked
+                                if(!canEdit && mode !== 'admin') classes += 'locked ';
                                 
                                 r.className = classes;
                                 r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>`;
                                 
-                                if(mode!=='read' && mode!=='guest') {
+                                if(canEdit || mode==='admin') {
                                     r.onclick = () => { src[m.id]=tm; app.renderSplitBracket(contId, src, mode); };
                                 }
                                 card.appendChild(r);
@@ -432,9 +501,11 @@
                         let classes = 'team-row ';
                         if(mode==='read') { if(sel) classes+='read-selected '; else classes+='read-ignored '; }
                         else if(mode==='edit'||mode==='admin') { if(sel) classes+='selected '; }
+                        if(!canEdit && mode !== 'admin') classes += 'locked ';
+
                         r.className = classes;
                         r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>`;
-                        if(mode!=='read' && mode!=='guest') {
+                        if(canEdit || mode==='admin') {
                             r.onclick=()=>{ src.sb=tm; app.renderSplitBracket(contId, src, mode); };
                         }
                         card.appendChild(r);
@@ -466,27 +537,17 @@
             renderRank: () => {
                 const l = document.getElementById('rankingList');
                 if(!state.db.users) { l.innerHTML="<div style='text-align:center;color:#555'>Sin datos</div>"; return; }
-                
                 const real = state.db.results || {};
                 const scores = [];
-                
-                // Calculamos el bracket real completo para comparar emparejamientos
                 const rt = app.calcTree(real);
 
                 Object.keys(state.db.users).forEach(u => {
                     const p = state.db.users[u].picks || {};
                     let pts = 0;
-                    
-                    // Calculamos el bracket del usuario
                     const ut = app.calcTree(p);
 
-                    // 1. WILD CARD (2 puntos por ganador) - No hay puntos de emparejamiento (son fijos)
-                    WC_MATCHES.forEach(m => { 
-                        if(real[m.id] && p[m.id] === real[m.id]) pts += 2; 
-                    });
+                    WC_MATCHES.forEach(m => { if(real[m.id] && p[m.id] === real[m.id]) pts += 2; });
 
-                    // FUNCIÓN HELPER PARA CHEQUEAR EMPAREJAMIENTOS
-                    // Devuelve true si los equipos son los mismos, sin importar el orden
                     const checkMatchup = (realMatch, userMatch) => {
                         if(!realMatch || !userMatch || realMatch.ph || userMatch.ph) return false;
                         const rTeams = [realMatch.h, realMatch.a].sort().join('-');
@@ -494,47 +555,30 @@
                         return rTeams === uTeams;
                     };
 
-                    // 2. DIVISIONAL
-                    // Ganador: 3 pts | Emparejamiento: 1 pto
                     rt.div.forEach(rM => {
                         const uM = ut.div.find(m => m.id === rM.id);
-                        
-                        // Chequeo Emparejamiento (1 pto)
                         if(checkMatchup(rM, uM)) pts += 1;
-
-                        // Chequeo Ganador (3 pts)
-                        // Si el usuario acertó el ganador de este partido específico (match ID)
                         if(real[rM.id] && p[rM.id] === real[rM.id]) pts += 3;
                     });
 
-                    // 3. CONFERENCE
-                    // Ganador: 4 pts | Emparejamiento: 1 pto
                     rt.conf.forEach(rM => {
                         const uM = ut.conf.find(m => m.id === rM.id);
-                        
                         if(checkMatchup(rM, uM)) pts += 1;
                         if(real[rM.id] && p[rM.id] === real[rM.id]) pts += 4;
                     });
 
-                    // 4. SUPER BOWL
-                    // Ganador: 5 pts | Emparejamiento: 1 pto
                     const rSB = rt.sb;
                     const uSB = ut.sb;
-                    
                     if(checkMatchup(rSB, uSB)) pts += 1;
                     if(rt.ch && ut.ch === rt.ch) pts += 5;
 
-                    // CAMPEÓN ELEGIDO POR EL USUARIO (para mostrarlo)
-                    const userWinner = ut.ch;
-                    scores.push({name:u, pts, winner: userWinner});
+                    scores.push({name:u, pts, winner: ut.ch});
                 });
-                
                 scores.sort((a,b) => b.pts - a.pts);
                 
                 l.innerHTML='';
                 scores.forEach((s,i)=>{
                     const d=document.createElement('div'); d.className='rank-row';
-                    
                     let champHtml = '';
                     if(s.winner && TEAMS[s.winner]) {
                         champHtml = `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview" alt="${s.winner}">`;
