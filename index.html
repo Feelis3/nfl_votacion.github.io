@@ -4,179 +4,314 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NFL 2026 Playoffs</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #0f0f0f;
-            --surface: #1e1e1e;
-            --border: #333;
+            --bg: #050505;
+            --surface: #141414;
+            --surface-light: #1f1f1f;
+            --border: #2a2a2a;
             --text-main: #ffffff;
-            --text-sub: #a0a0a0;
-            --accent: #00e676;
-            --danger: #ff5252;
-            --gold: #ffd700;
-            --nav-height: 60px;
-            --td-color: #00c853;
-            --fg-color: #2962ff;
-            --sf-color: #d50000;
+            --text-sub: #888888;
+            --accent: #00e676; /* Verde Neón para ganadores */
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            --danger: #ef4444;
+            --gold: #eab308;
+            --nav-height: 65px;
+            --td-color: #10b981;
+            --fg-color: #3b82f6;
+            --sf-color: #ef4444;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text-main); padding-bottom: calc(var(--nav-height) + 20px); }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; color: var(--text-main); padding-bottom: calc(var(--nav-height) + 20px); -webkit-font-smoothing: antialiased; }
 
-        /* HEADER */
+        /* --- NUEVO HEADER DISEÑO BROADCAST --- */
         header {
-            background: radial-gradient(circle at top, #2a2a2a 0%, #121212 100%);
-            padding: 15px 15px; position: sticky; top: 0; z-index: 100;
-            border-bottom: 1px solid var(--border);
-            display: flex; flex-direction: column; gap: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            background: #080808;
+            background: linear-gradient(180deg, #0f0f0f 0%, #050505 100%);
+            height: 72px;
+            padding: 0 20px;
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid #222;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         }
-        .header-top { display: flex; justify-content: center; align-items: center; width: 100%; position: relative; }
-        .logo { font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: white; text-transform: uppercase; display: flex; align-items: center; gap: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         
-        .status-bar {
-            font-size: 0.7rem; text-align: center; color: #ccc;
-            background: rgba(0, 0, 0, 0.4); padding: 6px; border-radius: 50px;
-            font-weight: 700; border: 1px solid rgba(255,255,255,0.1);
-            width: fit-content; margin: 0 auto; padding-left: 15px; padding-right: 15px;
-            text-transform: uppercase; letter-spacing: 1px;
+        /* Efecto de linea brillante abajo */
+        header::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent 0%, #3b82f6 50%, transparent 100%);
+            opacity: 0.7;
+        }
+
+        .header-brand {
+            display: flex; align-items: center; gap: 12px;
+        }
+        
+        .nfl-icon-box {
+            font-size: 1.8rem; color: white;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.4));
+        }
+
+        .header-titles {
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .ht-main {
+            font-weight: 900; font-size: 1.2rem; color: white; 
+            text-transform: uppercase; font-style: italic;
+            line-height: 1; letter-spacing: 0.5px;
+        }
+        
+        .ht-sub {
+            font-size: 0.65rem; color: #3b82f6; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 2px;
+            margin-top: 2px;
+        }
+
+        /* LIVE PULSE INDICATOR */
+        .live-pill {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #333;
+            padding: 6px 12px; border-radius: 30px;
+        }
+        
+        .live-dot {
+            width: 8px; height: 8px; background: var(--accent); border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent);
+            animation: livePulse 1.5s infinite;
+        }
+        
+        .live-txt {
+            font-size: 0.7rem; font-weight: 800; color: white; letter-spacing: 1px;
+        }
+
+        @keyframes livePulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         /* LAYOUT */
-        .container { max-width: 800px; margin: 0 auto; padding: 10px; }
-        .section { display: none; animation: fadeIn 0.4s ease-out; }
+        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
+        .section { display: none; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
 
-        /* BRACKET SYSTEM */
-        .conf-header-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        /* BRACKET SYSTEM - MODERN */
+        .conf-header-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
         .conf-badge { 
-            padding: 12px; text-align: center; border-radius: 8px; 
-            display: flex; justify-content: center; align-items: center;
-            background: #1a1a1a; border: 1px solid #333;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            padding: 15px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border);
+            display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden;
         }
-        .conf-logo-img { height: 45px; width: auto; object-fit: contain; }
-        .afc-bg { background: linear-gradient(180deg, #2b0505 0%, #1a1a1a 100%); border-top: 3px solid #d50a0a; }
-        .nfc-bg { background: linear-gradient(180deg, #021a36 0%, #1a1a1a 100%); border-top: 3px solid #013369; }
+        .conf-badge::before { content:''; position: absolute; top:0; left:0; width:100%; height:3px; }
+        .afc-bg::before { background: #d50a0a; } .nfc-bg::before { background: #013369; }
+        .conf-logo-img { height: 40px; width: auto; object-fit: contain; }
 
-        .round-wrapper { margin-bottom: 30px; }
-        .round-title { text-align: center; color: var(--text-sub); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; font-weight: 800; opacity: 0.8; }
+        /* ESPACIO AUMENTADO ENTRE RONDAS */
+        .round-wrapper { margin-bottom: 50px; }
+        
+        .round-title { text-align: center; color: var(--text-sub); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; font-weight: 800; }
         .matches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } 
-        .match-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .match-card { 
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px; 
+            overflow: hidden; margin-bottom: 12px; display: flex; flex-direction: column;
+            transition: transform 0.2s; 
+        }
+        .match-card:active { transform: scale(0.98); }
+        
         .team-row {
-            display: flex; align-items: center; padding: 8px 10px; height: 52px;
-            border-bottom: 1px solid var(--border); cursor: default; transition: all 0.3s ease;
-            user-select: none; -webkit-user-select: none; opacity: 0.6; filter: grayscale(100%);
+            display: flex; align-items: center; padding: 10px 12px; height: 56px;
+            border-bottom: 1px solid var(--border); cursor: default;
+            opacity: 0.5; filter: grayscale(100%); transition: all 0.3s;
         }
         .team-row:last-child { border-bottom: none; }
-        .team-seed { background: #333; color: #aaa; font-size: 0.7rem; font-weight: bold; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 4px; margin-right: 10px; flex-shrink: 0;}
-        .team-logo { width: 28px; height: 28px; object-fit: contain; margin-right: 10px; flex-shrink: 0; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
-        .team-name { font-size: 0.9rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 2; }
+        
+        /* ESTILO ACTIVO (PENDIENTE) - COLOR DEL EQUIPO */
+        .team-row.active-team { 
+            opacity: 1; filter: grayscale(0%); 
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, transparent 100%); 
+            border-left: 3px solid var(--team-color); 
+        }
 
-        .team-row.active-team {
+        /* ESTILO GANADOR (VERDE) */
+        .team-row.winner-green {
             opacity: 1; filter: grayscale(0%);
-            background: linear-gradient(90deg, var(--team-color-alpha) 0%, rgba(30,30,30,0) 100%);
-            border-left: 4px solid var(--team-color);
+            background: linear-gradient(90deg, rgba(0, 230, 118, 0.15) 0%, transparent 100%) !important;
+            border-left: 3px solid var(--accent) !important;
         }
-        .team-row.active-team .team-name { color: white; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
-        .team-row.active-team .team-seed { background: var(--team-color); color: white; }
-        .status-icon { margin-left: auto; font-size: 0.9rem; z-index: 2; }
-        .icon-check { color: var(--accent); filter: drop-shadow(0 0 5px rgba(0,230,118,0.4)); }
-        .icon-cross { color: var(--danger); opacity: 0.7; }
-        .team-row.eliminated {
-            border-left: 3px solid var(--danger); background: rgba(255, 82, 82, 0.05); opacity: 0.7; filter: grayscale(50%);
+        .team-row.winner-green .team-name { color: var(--accent); font-weight: 800; text-shadow: 0 0 10px rgba(0,230,118,0.4); }
+        .team-row.winner-green .team-seed { background: none; }
+        
+        .team-seed { font-size: 0.7rem; font-weight: 700; color: #666; width: 20px; margin-right: 8px; }
+        .team-logo { width: 30px; height: 30px; object-fit: contain; margin-right: 10px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .team-name { font-size: 0.9rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* ICONO TROFEO SEPARADO */
+        .status-icon { margin-left: 12px; color: var(--gold); font-size: 0.9rem; }
+        
+        .ph-box { padding: 20px; text-align: center; color: #444; font-size: 0.75rem; border: 1px dashed #333; border-radius: 12px; background: rgba(255,255,255,0.02); }
+
+        /* LIVE MATCHES */
+        .live-card {
+            background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); 
+            margin-bottom: 16px; cursor: pointer; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-        .team-row.eliminated .team-name { color: var(--danger); text-decoration: line-through; }
-        .ph-box { padding: 15px; text-align: center; color: #555; font-size: 0.7rem; border: 1px dashed #444; border-radius: 8px; margin-bottom: 5px; background: rgba(0,0,0,0.2); }
-        .sb-grid { display: flex; justify-content: center; margin-top: 10px; }
-        .sb-card { width: 100%; max-width: 340px; border: 2px solid #444; box-shadow: 0 0 20px rgba(0,0,0,0.3); }
-        
-        /* RANKING */
-        .rank-row { background: var(--surface); padding: 12px 15px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #2a2a2a; transition: transform 0.2s, background 0.2s; }
-        .rank-row:active { transform: scale(0.98); background: #252525; }
-        .rank-info { display: flex; align-items: center; gap: 15px; flex: 1; }
-        .rank-pos { font-weight: 900; color: #555; width: 25px; font-size: 1rem; }
-        .rank-details { display: flex; flex-direction: column; width: 100%; }
-        .rank-name { font-weight: 700; color: white; font-size: 1rem; margin-bottom: 4px; }
-        .progress-bg { width: 100%; max-width: 120px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
-        .rank-sub { font-size: 0.65rem; color: #888; margin-top: 3px; }
-        .rank-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-        .rank-pts { background: #333; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 0.9rem; color: var(--accent); border: 1px solid #444; }
-        .rank-champ-preview { width: 26px; height: 26px; border-radius: 50%; object-fit: contain; background: #222; padding: 3px; border: 1px solid #444; }
-
-        /* LIDERES CON FOTOS (CARD) - SEASON */
-        .leaders-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 30px; }
-        .leader-card { background: var(--surface); border-radius: 8px; border: 1px solid #333; overflow: hidden; position: relative; text-align: center; }
-        .leader-bg { height: 60px; background: linear-gradient(180deg, var(--team-c) 0%, #1e1e1e 100%); opacity: 0.8; }
-        .leader-img { width: 70px; height: 70px; object-fit: cover; object-position: top; border-radius: 50%; border: 3px solid #1e1e1e; background: #333; margin-top: -35px; position: relative; z-index: 2; }
-        .leader-info { padding: 8px; }
-        .leader-name { font-size: 0.8rem; font-weight: 800; color: white; line-height: 1.2; margin-bottom: 4px; }
-        .leader-team { font-size: 0.65rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .leader-stat { background: #121212; border: 1px solid #333; border-radius: 4px; padding: 6px; display: flex; flex-direction: column; }
-        .stat-num { font-size: 1rem; font-weight: 900; color: var(--accent); }
-        .stat-lbl { font-size: 0.6rem; color: #777; text-transform: uppercase; }
-
-        /* PARTIDOS EN VIVO */
-        .live-card { background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 15px; cursor: pointer; position: relative; transition: 0.3s; }
-        
-        /* ZONA ROJA ANIMATION */
         .live-card.red-zone-active { border: 1px solid var(--danger); box-shadow: 0 0 10px rgba(255, 82, 82, 0.3); }
-        
-        .live-header { background: #151515; padding: 8px 12px; font-size: 0.7rem; color: #aaa; display: flex; justify-content: space-between; border-bottom: 1px solid #333; align-items: center; }
-        .live-status { color: #fff; font-weight: 700; }
-        .live-status.in-progress { color: var(--danger); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
-        .live-body { padding: 15px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
-        .live-team { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-        .live-logo { width: 45px; height: 45px; object-fit: contain; }
-        .live-name { font-size: 0.9rem; font-weight: 800; color: white; line-height: 1.1; }
-        .live-score-col { text-align: center; }
-        .live-score { font-size: 1.8rem; font-weight: 900; color: white; letter-spacing: 1px; }
-        .live-vs { font-size: 0.8rem; color: #555; font-weight: 700; }
 
-        /* GAME SITUATION IN LIST */
-        .game-situation { font-size: 0.65rem; color: var(--accent); font-weight: 900; text-transform: uppercase; margin-right: 8px; }
+        .live-header { 
+            background: var(--surface-light); padding: 10px 15px; font-size: 0.75rem; color: #aaa; 
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); 
+        }
+        .live-status { font-weight: 700; color: white; background: #333; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; }
+        .live-status.in-progress { background: var(--danger); color: white; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        
+        .game-situation { font-size: 0.65rem; color: #3b82f6; font-weight: 900; text-transform: uppercase; margin-right: 8px; }
         .red-zone-text { color: var(--danger); animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.5; } }
 
+        .live-body { padding: 20px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 15px; }
+        .live-team { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+        .live-logo { width: 55px; height: 55px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+        .live-name { font-size: 1rem; font-weight: 800; color: white; }
+        .live-score { font-size: 2rem; font-weight: 900; color: white; letter-spacing: -1px; }
+        .live-vs { font-size: 0.8rem; color: #444; font-weight: 700; background: #111; padding: 5px 10px; border-radius: 20px; }
+
         /* MODAL PARTIDO DETALLES */
-        .match-modal-header { text-align: center; padding: 20px; background: #111; border-bottom: 1px solid #333; }
-        .mm-score-board { display: flex; justify-content: center; align-items: center; gap: 30px; margin-top: 15px; }
-        .mm-logo-big { width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 0 15px rgba(255,255,255,0.1)); }
+        .match-modal-header { padding: 30px 20px; background: linear-gradient(180deg, #1a1a1a 0%, #050505 100%); border-bottom: 1px solid var(--border); text-align: center; }
+        .mm-score-board { display: flex; justify-content: space-between; align-items: center; max-width: 400px; margin: 0 auto; }
+        .mm-team { display: flex; flex-direction: column; align-items: center; width: 30%; position: relative; }
+        .mm-logo-big { width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.05)); }
+        .mm-name-big { font-weight: 900; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
+        .mm-score-big { font-size: 3.5rem; font-weight: 800; width: 40%; line-height: 1; }
+        .mm-score-pre { font-size: 1.8rem; font-weight: 700; color: #666; letter-spacing: 2px; }
+        .mm-weather { margin-top: 15px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; color: #ddd; }
         
-        .mm-score { font-size: 3rem; font-weight: 900; color: white; }
-        .mm-score.pre-game { font-size: 2rem; color: #666; letter-spacing: 2px; }
-        
-        .mm-meta { text-align: center; padding: 10px; color: #888; font-size: 0.8rem; border-bottom: 1px solid #333; background: #151515; }
-        
-        /* ULTIMA JUGADA BOX */
-        .last-play-box { background: rgba(0, 230, 118, 0.05); border-bottom: 1px solid var(--border); padding: 15px; text-align: left; }
-        .lp-label { font-size: 0.65rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
-        .lp-text { font-size: 0.85rem; color: white; line-height: 1.3; }
-
-        /* POSESION */
-        .ball-icon { display:none; color: #ff9800; font-size: 1.2rem; margin-top: 5px; animation: bounce 1s infinite; }
+        .ball-icon { color: var(--gold); font-size: 1.2rem; position: absolute; top: -10px; right: 10px; animation: bounce 1s infinite; display: none; }
         .has-possession .ball-icon { display: block; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-        /* ANOTACIONES MEJORADAS */
-        .scoring-list { padding: 15px; }
-        .scoring-item { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; border-bottom: 1px solid #222; padding-bottom: 12px; }
-        .si-logo { width: 40px; height: 40px; object-fit: contain; background: #1a1a1a; border-radius: 50%; padding: 4px; border: 1px solid #333; }
-        .si-content { flex: 1; }
-        .si-time { font-size: 0.65rem; color: #777; margin-bottom: 4px; font-weight: 600; }
+        /* ULTIMA JUGADA */
+        .last-play-box { 
+            background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); 
+            border-radius: 8px; padding: 12px; margin: 20px 20px 0 20px; text-align: left;
+        }
+        .lp-label { color: #3b82f6; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+        .lp-text { color: white; font-size: 0.8rem; line-height: 1.3; }
+
+        /* STATS COMPARISON */
+        .stats-comparison { padding: 0 20px 20px 20px; }
+        .sc-row { margin-bottom: 15px; }
+        .sc-label { text-align: center; color: #666; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
+        .sc-bars { display: flex; align-items: center; gap: 12px; }
+        .sc-val { font-weight: 700; color: white; font-size: 0.85rem; width: 35px; text-align: center; }
+        .sc-bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; }
+        .sc-fill-home { height: 100%; background: var(--team-a-color); opacity: 0.8; }
+        .sc-fill-away { height: 100%; background: var(--team-b-color); opacity: 0.8; }
+
+        .game-leaders { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 20px 20px; }
+        .gl-box { 
+            background: var(--surface-light); border-radius: 10px; padding: 12px; 
+            display: flex; gap: 12px; align-items: center; border: 1px solid var(--border); 
+        }
+        .gl-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; object-position: top; background: #333; border: 2px solid #333; flex-shrink: 0; }
+        .gl-info { display: flex; flex-direction: column; overflow: hidden; }
+        .gl-name { font-size: 0.8rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gl-stat { font-size: 0.75rem; color: #3b82f6; font-weight: 600; }
+        .gl-cat { font-size: 0.6rem; color: #666; text-transform: uppercase; }
+
+        /* SCORING PLAYS */
+        .scoring-list { padding: 0 20px 20px 20px; }
+        .scoring-item { 
+            display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start; 
+            padding-bottom: 15px; border-bottom: 1px solid #222; 
+        }
+        .si-logo { 
+            width: 40px !important; height: 40px !important; min-width: 40px; 
+            object-fit: contain; background: #1a1a1a; border-radius: 50%; 
+            padding: 4px; border: 1px solid #333; flex-shrink: 0;
+        }
+        .si-time { font-size: 0.7rem; color: #666; font-weight: 700; width: 40px; flex-shrink: 0; padding-top: 4px; }
+        .si-content { flex: 1; display: flex; flex-direction: column; }
+        .si-tag { 
+            font-size: 0.6rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; 
+            display: inline-block; margin-bottom: 4px; color: black; width: fit-content;
+        }
+        .tag-td { background: var(--td-color); } .tag-fg { background: var(--fg-color); color: white; } .tag-sf { background: var(--sf-color); color: white; }
+        .si-text { font-size: 0.85rem; color: #ddd; line-height: 1.4; }
+        .si-score { font-size: 1.1rem; font-weight: 800; color: white; margin-left: auto; align-self: center; }
+
+        /* --- ESTILO UNIFICADO: RANKING Y NOTICIAS --- */
+        .card-style-magazine {
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: 10px; 
+            padding: 15px; 
+            margin-bottom: 12px; 
+            position: relative; 
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 70px;
+            transition: 0.2s;
+            text-decoration: none;
+            border-left: 4px solid #333; 
+        }
         
-        .score-tag { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-right: 6px; color:black; text-transform: uppercase; display: inline-block; vertical-align: middle; }
-        .tag-td { background: var(--td-color); box-shadow: 0 0 10px rgba(0, 200, 83, 0.4); }
-        .tag-fg { background: var(--fg-color); color: white; }
-        .tag-sf { background: var(--sf-color); color: white; }
-        
-        .si-desc { font-size: 0.85rem; color: #ddd; line-height: 1.3; }
-        .si-score { font-size: 1rem; font-weight: 900; color: white; margin-left: auto; align-self: center; background:#222; padding: 5px 10px; border-radius: 6px; border: 1px solid #444; }
+        .card-watermark {
+            position: absolute; right: -20px; top: -15px; width: 130px; height: 130px;
+            opacity: 0.1; transform: rotate(-15deg); object-fit: contain; pointer-events: none; z-index: 0;
+        }
+
+        /* NOTICIAS */
+        .news-card { display: block; min-height: 90px; }
+        .news-tag { 
+            font-size: 0.6rem; font-weight: 900; text-transform: uppercase; padding: 2px 6px; 
+            border-radius: 4px; margin-bottom: 6px; display: inline-block; width: fit-content; z-index: 2; position: relative;
+        }
+        .news-card[data-type="PARTIDO"] .news-tag { background: rgba(255, 215, 0, 0.2); color: var(--gold); }
+        .news-card[data-type="NOTICIA"] .news-tag { background: rgba(255, 255, 255, 0.1); color: #aaa; }
+        .news-title { color: white; font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; line-height: 1.4; z-index: 2; position: relative; }
+        .news-meta { color: #777; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; z-index: 2; position: relative; }
+
+        /* LIDERES SEASON */
+        .leaders-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 25px; }
+        .leader-card { background: var(--surface); border-radius: 8px; border: 1px solid #333; overflow: hidden; position: relative; text-align: center; }
+        .leader-bg { height: 50px; background: linear-gradient(180deg, var(--tc) 0%, #1e1e1e 100%); opacity: 0.8; }
+        .leader-img { width: 60px; height: 60px; object-fit: cover; object-position: top; border-radius: 50%; border: 3px solid #1e1e1e; background: #333; margin-top: -30px; position: relative; z-index: 2; }
+        .leader-info { padding: 8px; }
+        .leader-name { font-size: 0.75rem; font-weight: 800; color: white; line-height: 1.2; margin-bottom: 4px; }
+        .leader-team { font-size: 0.6rem; color: #aaa; text-transform: uppercase; margin-bottom: 6px; }
+        .leader-stat { background: #121212; border: 1px solid #333; border-radius: 4px; padding: 4px; display: flex; flex-direction: column; }
+        .stat-num { font-size: 0.9rem; font-weight: 900; color: #3b82f6; }
+        .stat-lbl { font-size: 0.55rem; color: #777; text-transform: uppercase; }
+
+        /* RANKING REDISEÑADO (CLEAN) */
+        .rank-card { 
+            cursor: pointer; 
+            flex-direction: row; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .rank-left { display: flex; align-items: center; gap: 15px; z-index: 2; }
+        .rank-number { 
+            font-size: 1.4rem; font-weight: 900; font-style: italic;
+            width: 30px; text-align: center; line-height: 1;
+        }
+        .rank-user-info { display: flex; flex-direction: column; }
+        .rank-user-name { font-weight: 800; font-size: 1rem; color: white; }
+        .progress-bg { width: 100px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); }
+        .rank-stats-text { font-size: 0.65rem; color: #aaa; margin-top: 2px; }
+        .rank-right { z-index: 2; text-align: right; }
+        .rank-pts { background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.9rem; color: var(--accent); border: 1px solid #444; }
+        .rank-champ-logo { width: 35px; height: 35px; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); margin-top: 5px; }
 
         /* BARRA DE PREDICCION */
         .prediction-box { padding: 20px; border-bottom: 1px solid #333; }
@@ -186,47 +321,18 @@
         .pred-fill-r { height: 100%; background: var(--team-b-color, #555); flex: 1; }
         .pred-labels { display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.75rem; font-weight: 700; color: white; }
 
-        /* NOTICIAS ESTILO REVISTA */
-        .news-card { 
-            background: var(--surface); border: 1px solid var(--border); border-radius: 12px; 
-            padding: 20px; margin-bottom: 15px; transition: 0.2s; cursor: pointer; 
-            display: block; text-decoration: none; position: relative; overflow: hidden; 
-            min-height: 100px; display: flex; flex-direction: column; justify-content: flex-end;
-        }
-        
-        /* Marca de agua */
-        .news-bg-watermark {
-            position: absolute; right: -20px; top: -20px; width: 120px; height: 120px; 
-            opacity: 0.1; transform: rotate(-15deg); object-fit: contain; pointer-events: none;
-        }
-
-        .news-tag { 
-            font-size: 0.6rem; font-weight: 900; text-transform: uppercase; 
-            padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; display: inline-block; width: fit-content;
-            background: rgba(255,255,255,0.1); color: #ccc;
-        }
-        
-        .news-title { 
-            color: white; font-weight: 800; font-size: 1.1rem; margin-bottom: 5px; 
-            line-height: 1.3; text-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 2; 
-        }
-        .news-meta { color: #888; font-size: 0.7rem; font-weight: 600; z-index: 2; }
-
-        /* NAV - 5 ITEMS */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; }
-        .nav-item { background: none; border: none; color: #666; display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; gap: 4px; width: 20%; height: 100%; justify-content: center; transition: 0.2s;}
-        .nav-item i { font-size: 1.2rem; margin-bottom: 2px; }
+        /* NAV */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(15px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; gap: 5px; width: 20%; height: 100%; justify-content: center; transition: 0.3s;}
+        .nav-item i { font-size: 1.3rem; margin-bottom: 2px; transition: 0.3s; }
         .nav-item.active { color: white; }
-        .nav-item.active i { transform: scale(1.1); color: var(--accent); text-shadow: 0 0 10px rgba(0,230,118,0.5); }
-
-        /* MODALES */
-        .btn-full { background: var(--accent); color: black; border: none; padding: 14px; border-radius: 8px; width: 100%; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,230,118,0.2); }
-        .login-input { background: #333; border: 1px solid #555; padding: 14px; border-radius: 8px; color: white; width: 100%; margin-bottom: 20px; text-align: center; font-size: 1rem; outline: none; }
+        .nav-item.active i { color: var(--accent); transform: translateY(-2px); filter: drop-shadow(0 4px 10px rgba(0,230,118,0.5)); }
 
         .full-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: none; overflow-y: auto; }
-        .modal-nav-bar { position: sticky; top: 0; left: 0; width: 100%; height: 60px; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 50; }
+        .modal-nav-bar { position: sticky; top: 0; left: 0; width: 100%; height: 60px; background: rgba(5,5,5,0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 50; }
         .modal-back-btn { background: none; border: none; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 8px; }
         .modal-title-text { font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 1rem; }
+        .section-header { padding: 25px 20px 10px 20px; color: #555; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
         
         @media (max-width: 480px) {
             .team-name { font-size: 0.8rem; }
@@ -238,25 +344,28 @@
 <body>
 
     <header>
-        <div class="header-top">
-            <div class="logo"><i class="fa-solid fa-football"></i> PLAYOFFS 2026</div>
+        <div class="header-brand">
+            <div class="nfl-icon-box"><i class="fa-solid fa-football"></i></div>
+            <div class="header-titles">
+                <div class="ht-main">PLAYOFFS</div>
+                <div class="ht-sub">Temporada 2026</div>
+            </div>
         </div>
-        <div class="status-bar">
-            <i class="fa-solid fa-lock"></i> QUINIELA CERRADA &bull; EN JUEGO
+        <div class="live-pill">
+            <div class="live-dot"></div>
+            <div class="live-txt">EN JUEGO</div>
         </div>
     </header>
 
     <div class="container">
         
         <div id="tab-ranking" class="section active">
-            <h4 style="text-align:center; color:#666; margin: 25px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Clasificación Global</h4>
+            <div class="section-header">Clasificación</div>
             <div id="rankingList"></div>
         </div>
 
         <div id="tab-results" class="section">
-            <div style="text-align:center; padding:12px; margin-bottom:20px; color: var(--gold); font-size: 0.8rem; border:1px solid rgba(255, 215, 0, 0.3); border-radius:8px; background:rgba(255, 215, 0, 0.05); font-weight: 600;">
-                <i class="fa-solid fa-circle-check"></i> RESULTADOS OFICIALES
-            </div>
+            <div class="section-header">Cuadro Oficial</div>
             <div class="conf-header-row">
                 <div class="conf-badge afc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/afc.png" class="conf-logo-img"></div>
                 <div class="conf-badge nfc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png" class="conf-logo-img"></div>
@@ -265,109 +374,72 @@
         </div>
 
         <div id="tab-matches" class="section">
-            <h4 style="text-align:center; color:#666; margin: 20px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Marcadores en Tiempo Real (ESPN)</h4>
-            <div id="liveGamesList">Cargando partidos...</div>
+            <div class="section-header">Marcadores en Vivo</div>
+            <div id="liveGamesList"></div>
         </div>
 
         <div id="tab-news" class="section">
-            <h4 style="text-align:center; color:#666; margin: 20px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Líderes de la Temporada</h4>
+            <div class="section-header">Líderes de la Temporada</div>
             <div class="leaders-grid">
-                <div class="leader-card" style="--team-c: #241773;">
+                <div class="leader-card" style="--tc: #241773;">
                     <div class="leader-bg"></div>
                     <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3916387.png&w=350&h=254" class="leader-img">
-                    <div class="leader-info">
-                        <div class="leader-name">Lamar Jackson</div>
-                        <div class="leader-team">Ravens</div>
-                        <div class="leader-stat"><span class="stat-num">4,450</span><span class="stat-lbl">Yardas Pase</span></div>
-                    </div>
+                    <div class="leader-info"><div class="leader-name">Lamar Jackson</div><div class="leader-stat">4,450</div><div class="leader-lbl">YDS PASE</div></div>
                 </div>
-                <div class="leader-card" style="--team-c: #004C54;">
+                <div class="leader-card" style="--tc: #004C54;">
                     <div class="leader-bg"></div>
                     <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3929630.png&w=350&h=254" class="leader-img">
-                    <div class="leader-info">
-                        <div class="leader-name">Saquon Barkley</div>
-                        <div class="leader-team">Eagles</div>
-                        <div class="leader-stat"><span class="stat-num">1,890</span><span class="stat-lbl">Yardas Carrera</span></div>
-                    </div>
+                    <div class="leader-info"><div class="leader-name">Saquon Barkley</div><div class="leader-stat">1,890</div><div class="leader-lbl">YDS CARRERA</div></div>
                 </div>
-                <div class="leader-card" style="--team-c: #4F2683;">
+                <div class="leader-card" style="--tc: #4F2683;">
                     <div class="leader-bg"></div>
                     <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4262921.png&w=350&h=254" class="leader-img">
-                    <div class="leader-info">
-                        <div class="leader-name">Justin Jefferson</div>
-                        <div class="leader-team">Vikings</div>
-                        <div class="leader-stat"><span class="stat-num">1,650</span><span class="stat-lbl">Yardas Rec</span></div>
-                    </div>
+                    <div class="leader-info"><div class="leader-name">Justin Jefferson</div><div class="leader-stat">1,650</div><div class="leader-lbl">YDS REC</div></div>
                 </div>
             </div>
 
-            <h4 style="text-align:center; color:#666; margin: 20px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Noticias ESPN Deportes</h4>
-            <div id="newsList">Cargando noticias...</div>
+            <div class="section-header">Noticias & Actualidad</div>
+            <div id="newsList"></div>
         </div>
 
         <div id="tab-admin" class="section">
-            <div style="background:#222; padding:25px; border-radius:12px; margin-bottom:20px; border:1px solid #333;">
-                <input type="password" id="adminPass" class="login-input" placeholder="Contraseña Admin">
-                <button class="btn-full" onclick="app.adminLogin()">Entrar</button>
+            <div style="background:#1a1a1a; padding:30px; border-radius:16px; margin-top:20px; border:1px solid #333;">
+                <input type="password" id="adminPass" style="background:#333; border:none; padding:15px; width:100%; color:white; border-radius:8px; margin-bottom:15px;" placeholder="Contraseña">
+                <button onclick="app.adminLogin()" style="background:white; color:black; border:none; padding:15px; width:100%; border-radius:8px; font-weight:800;">ENTRAR</button>
             </div>
-            <div id="adminPanel" style="display:none;">
-                <h4 style="text-align:center;">ACTUALIZAR RESULTADOS</h4>
+            <div id="adminPanel" style="display:none; margin-top:20px;">
                 <div id="adminBracket"></div>
-                <button class="btn-full" style="margin-top:20px; background:#fff; color:black;" onclick="app.adminSave()">PUBLICAR OFICIALES</button>
+                <button onclick="app.adminSave()" style="background:var(--accent); color:white; border:none; padding:15px; width:100%; border-radius:8px; font-weight:800; margin-top:20px;">PUBLICAR CAMBIOS</button>
             </div>
-        </div>
-    </div>
-
-    <div id="viewModal" class="full-modal">
-        <div class="modal-nav-bar">
-            <button class="modal-back-btn" onclick="document.getElementById('viewModal').style.display='none'">
-                <i class="fa-solid fa-arrow-left"></i> Volver
-            </button>
-            <span class="modal-title-text" id="viewModalTitle">NOMBRE</span>
-            <div style="width:50px;"></div>
-        </div>
-        <div class="container">
-            <div class="conf-header-row" style="margin-top:20px;">
-                <div class="conf-badge afc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/afc.png" class="conf-logo-img"></div>
-                <div class="conf-badge nfc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png" class="conf-logo-img"></div>
-            </div>
-            <div id="viewModalBody"></div>
-            <div style="height: 80px;"></div>
         </div>
     </div>
 
     <div id="matchModal" class="full-modal">
         <div class="modal-nav-bar">
-            <button class="modal-back-btn" onclick="document.getElementById('matchModal').style.display='none'">
-                <i class="fa-solid fa-arrow-down"></i> Cerrar
-            </button>
-            <span class="modal-title-text">DETALLES DEL PARTIDO</span>
-            <div style="width:50px;"></div>
+            <button onclick="document.getElementById('matchModal').style.display='none'" style="background:none; border:none; color:white; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            <span style="font-weight:800; color:white;">DETALLES</span>
+            <div style="width:20px"></div>
         </div>
-        <div id="matchModalContent" style="padding-bottom:80px;"></div>
+        <div id="matchModalContent" style="padding-bottom:100px;"></div>
+    </div>
+
+    <div id="viewModal" class="full-modal">
+        <div class="modal-nav-bar">
+            <button onclick="document.getElementById('viewModal').style.display='none'" style="background:none; border:none; color:white; font-size:1.2rem;"><i class="fa-solid fa-arrow-left"></i></button>
+            <span id="viewModalTitle" style="font-weight:800; color:white;">USUARIO</span>
+            <div style="width:20px"></div>
+        </div>
+        <div class="container">
+            <div id="viewModalBody" style="padding-top:20px;"></div>
+        </div>
     </div>
 
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="app.nav('ranking')">
-            <i class="fa-solid fa-trophy"></i>
-            <span>Ranking</span>
-        </button>
-        <button class="nav-item" onclick="app.nav('results')">
-            <i class="fa-solid fa-calendar-days"></i>
-            <span>Resultados</span>
-        </button>
-        <button class="nav-item" onclick="app.nav('matches')">
-            <i class="fa-solid fa-stopwatch"></i>
-            <span>Partidos</span>
-        </button>
-        <button class="nav-item" onclick="app.nav('news')">
-            <i class="fa-solid fa-newspaper"></i>
-            <span>Noticias</span>
-        </button>
-        <button class="nav-item" onclick="app.nav('admin')">
-            <i class="fa-solid fa-user-shield"></i>
-            <span>Admin</span>
-        </button>
+        <button class="nav-item active" onclick="app.nav('ranking')"><i class="fa-solid fa-trophy"></i><span>Ranking</span></button>
+        <button class="nav-item" onclick="app.nav('results')"><i class="fa-solid fa-list-ul"></i><span>Cuadro</span></button>
+        <button class="nav-item" onclick="app.nav('matches')"><i class="fa-solid fa-stopwatch"></i><span>Partidos</span></button>
+        <button class="nav-item" onclick="app.nav('news')"><i class="fa-solid fa-newspaper"></i><span>Noticias</span></button>
+        <button class="nav-item" onclick="app.nav('admin')"><i class="fa-solid fa-gear"></i><span>Admin</span></button>
     </nav>
 
     <script type="module">
@@ -400,7 +472,7 @@
             "49ers": { s:6, c:"N", color:"#AA0000", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" },
             "Packers": { s:7, c:"N", color:"#203731", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" },
             "Chiefs": { s:1, c:"A", color:"#E31837", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png" },
-            "Ravens": { s:2, c:"A", color:"#241773", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" }
+            "Ravens": { s:1, c:"A", color:"#241773", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" }
         };
 
         const WC_MATCHES = [
@@ -433,9 +505,10 @@
                 if(id === 'news') app.loadNews();
             },
 
+            // --- CARGA NOTICIAS "INTELIGENTES" ---
             loadNews: async () => {
                 const cont = document.getElementById('newsList');
-                if(cont.innerHTML.includes('news-card')) return; 
+                if(cont.innerHTML.includes('card-style-magazine')) return; 
                 cont.innerHTML = '<div style="text-align:center;padding:30px;color:#666"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem; margin-bottom:10px;"></i><br>Cargando datos en español...</div>';
                 
                 try {
@@ -452,29 +525,33 @@
                                 type = 'PARTIDO';
                             }
                             
-                            // DETECTAR EQUIPO PARA COLOR/LOGO
+                            // Detectar equipo
                             let teamColor = '#444';
                             let teamLogo = '';
-                            let found = false;
+                            let hasTeam = false;
                             
-                            for(const [key, val] of Object.entries(TEAMS)) {
-                                if(title.includes(key)) {
+                            for (const [key, val] of Object.entries(TEAMS)) {
+                                if (title.includes(key)) {
                                     teamColor = val.color;
                                     teamLogo = val.logo;
-                                    found = true;
+                                    hasTeam = true;
                                     break;
                                 }
                             }
                             
-                            let watermark = found ? `<img src="${teamLogo}" class="news-bg-watermark">` : '';
-                            let style = found ? `background: linear-gradient(135deg, #1e1e1e 60%, ${teamColor}40 100%); border-left: 4px solid ${teamColor};` : '';
+                            let style = `border-left: 5px solid ${teamColor};`;
+                            if(hasTeam) {
+                                style += `background: linear-gradient(135deg, var(--surface) 30%, ${teamColor}20 100%);`;
+                            }
+                            
+                            let watermark = hasTeam ? `<img src="${teamLogo}" class="card-watermark">` : '';
 
                             cont.innerHTML += `
-                                <a href="${item.link}" target="_blank" class="news-card" data-type="${type}" style="${style}">
+                                <a href="${item.link}" target="_blank" class="card-style-magazine news-card" data-type="${type}" style="${style}">
                                     ${watermark}
                                     <span class="news-tag">${type}</span>
                                     <div class="news-title">${title}</div>
-                                    <div class="news-meta"><span class="news-source">ESPN DEPORTES</span> &bull; <span>${date}</span></div>
+                                    <div class="news-meta"><span class="news-source">ESPN DEPORTES</span><span>${date}</span></div>
                                 </a>
                             `;
                         });
@@ -505,13 +582,16 @@
                         const comp = evt.competitions[0];
                         const team1 = comp.competitors[1]; // Home
                         const team2 = comp.competitors[0]; // Away
-                        const status = evt.status.type.state;
+                        const status = evt.status.type.state; // pre, in, post
                         const statusDetail = evt.status.type.detail;
                         const score1 = team1.score;
                         const score2 = team2.score;
-                        let statusClass = status === 'in' ? 'in-progress' : '';
+
+                        let statusClass = '';
+                        if(status === 'in') statusClass = 'in-progress';
+
+                        // Traducir estados simples
                         let statusText = statusDetail.replace('Final', 'FINAL').replace('OT', 'PRÓRROGA');
-                        
                         if(status === 'pre') {
                             const d = new Date(evt.date);
                             statusText = d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
@@ -535,7 +615,7 @@
                         card.onclick = () => app.openMatchModal(idx);
                         card.innerHTML = `
                             <div class="live-header">
-                                <span>${evt.shortName}</span>
+                                <span>${evt.name}</span>
                                 <div style="display:flex; align-items:center;">
                                     ${situationHtml}
                                     <span class="live-status ${statusClass}">${statusText}</span>
@@ -580,7 +660,7 @@
                     const home = comp.competitors[1];
                     const away = comp.competitors[0];
                     const venue = detailed.gameInfo ? detailed.gameInfo.venue.fullName : 'Estadio';
-                    const statusState = detailed.header.competitions[0].status.type.state;
+                    const statusState = detailed.header.competitions[0].status.type.state; // 'pre', 'in', 'post'
                     
                     let scoreDisplay = "";
                     let timeStr = "";
@@ -626,6 +706,7 @@
                     let bottomContent = '';
 
                     if(statusState === 'pre') {
+                        // SI ES PREVIA: Solo mostrar hora y ocultar lideres/anotaciones
                         bottomContent = `
                             <div style="text-align:center; padding:30px; color:#666;">
                                 <i class="fa-regular fa-clock" style="font-size:2rem; margin-bottom:10px;"></i>
@@ -634,40 +715,43 @@
                             </div>
                         `;
                     } else {
+                        // SI ESTA EN JUEGO O FINALIZADO: Mostrar todo
                         let scoringHtml = '';
                         if(detailed.scoringPlays && detailed.scoringPlays.length > 0) {
                             detailed.scoringPlays.forEach(play => {
                                 const teamLogo = (play.team && play.team.logo) || 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png';
+                                // Mini traductor
+                                let text = play.text.replace('Touchdown', 'Touchdown').replace('Field Goal', 'Gol de Campo').replace('Safety', 'Safety').replace('pass', 'pase').replace('run', 'carrera').replace('good', 'bueno');
+                                
                                 let typeText = play.type ? play.type.text : "Anotación";
                                 let badgeClass = '', badgeLabel = 'PUNTOS';
                                 if(typeText.includes('Touchdown')) { badgeClass = 'tag-td'; badgeLabel = 'TOUCHDOWN'; }
                                 else if(typeText.includes('Field Goal')) { badgeClass = 'tag-fg'; badgeLabel = 'GOL DE CAMPO'; }
                                 else if(typeText.includes('Safety')) { badgeClass = 'tag-sf'; badgeLabel = 'SAFETY'; }
-                                
+
                                 scoringHtml += `
                                     <div class="scoring-item">
                                         <img src="${teamLogo}" class="si-logo">
                                         <div class="si-content">
                                             <div class="si-time">${play.clock.displayValue} - Q${play.period.number}</div>
                                             <div style="margin-bottom:4px;"><span class="score-tag ${badgeClass}">${badgeLabel}</span></div>
-                                            <div class="si-desc">${play.text}</div>
+                                            <div class="si-desc">${text}</div>
                                         </div>
                                         <div class="si-score">${play.homeScore}-${play.awayScore}</div>
                                     </div>`;
                             });
-                        } else {
-                            scoringHtml = '<div style="text-align:center;color:#666;padding:20px;">Sin anotaciones aún.</div>';
-                        }
+                        } else { scoringHtml = '<div style="text-align:center;color:#666;padding:20px;">Sin anotaciones aún.</div>'; }
+
+                        // LIDERES DE PARTIDO Y STATS DE EQUIPO ELIMINADOS, SOLO ANOTACIONES
 
                         bottomContent = `
                             ${lastPlayHtml}
-                            <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Anotaciones (Minuto a Minuto)</h4>
-                            <div class="scoring-list">
-                                ${scoringHtml}
-                            </div>
+                            <div class="section-header">Anotaciones</div>
+                            <div class="scoring-list">${scoringHtml}</div>
                         `;
                     }
 
+                    // RENDER FINAL DEL MODAL
                     content.innerHTML = `
                         <div class="match-modal-header">
                             <div style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">${venue}</div>
@@ -690,13 +774,9 @@
                         <div class="prediction-box">
                             <div class="pred-title">Probabilidad de Victoria (ESPN Analytics)</div>
                             <div class="pred-bar" style="--team-a-color: #${home.team.color}; --team-b-color: #${away.team.color}">
-                                <div class="pred-fill-l" style="width:${homePct}%"></div>
-                                <div class="pred-fill-r"></div>
+                                <div class="pred-fill-l" style="width:${homePct}%"></div><div class="pred-fill-r"></div>
                             </div>
-                            <div class="pred-labels">
-                                <span style="color:#${home.team.color}">${Math.round(homePct)}% ${home.team.name}</span>
-                                <span style="color:#${away.team.color}">${Math.round(awayPct)}% ${away.team.name}</span>
-                            </div>
+                            <div class="pred-labels"><span style="color:#${home.team.color}">${Math.round(homePct)}% ${home.team.name}</span><span style="color:#${away.team.color}">${Math.round(awayPct)}% ${away.team.name}</span></div>
                         </div>
                         
                         ${bottomContent}
@@ -708,269 +788,130 @@
                 }
             },
 
-            calcTree: (picksSource) => {
-                const p = picksSource || {};
-                let wc = {A:[], N:[]};
-                WC_MATCHES.forEach(m => { if(p[m.id]) wc[TEAMS[p[m.id]].c].push(p[m.id]); });
-
-                let div = [];
-                ['A', 'N'].forEach(c => {
-                    if(wc[c].length === 3) {
-                        const s1 = Object.keys(TEAMS).find(t => TEAMS[t].c === c && TEAMS[t].s === 1);
-                        let pool = [s1, ...wc[c]].sort((a,b) => TEAMS[a].s - TEAMS[b].s);
-                        div.push({ id:`${c}d1`, h:pool[0], a:pool[3], c:c });
-                        div.push({ id:`${c}d2`, h:pool[1], a:pool[2], c:c });
-                    } else {
-                        div.push({ id:`${c}d1`, ph:true, c:c }, { id:`${c}d2`, ph:true, c:c });
-                    }
-                });
-
-                let conf = [];
-                let divWinners = {A:[], N:[]};
-                div.forEach(match => { 
-                    if(!match.ph && p[match.id] && (p[match.id] === match.h || p[match.id] === match.a)) {
-                        divWinners[match.c].push(p[match.id]);
-                    }
-                });
-                ['A', 'N'].forEach(c => {
-                    if(divWinners[c].length === 2) {
-                        let sorted = divWinners[c].sort((a,b) => TEAMS[a].s - TEAMS[b].s);
-                        conf.push({ id:`${c}c`, h:sorted[0], a:sorted[1], c:c });
-                    } else conf.push({ id:`${c}c`, ph:true, c:c });
-                });
-
-                let sb = { id:'sb', ph:true };
-                const matchA = conf.find(m => m.c === 'A');
-                const matchN = conf.find(m => m.c === 'N');
-                const aChamp = (matchA && !matchA.ph && p[matchA.id]) ? p[matchA.id] : null;
-                const nChamp = (matchN && !matchN.ph && p[matchN.id]) ? p[matchN.id] : null;
-
-                if(aChamp && nChamp) sb = { id:'sb', h:aChamp, a:nChamp };
-                let ch = null;
-                if(!sb.ph && p['sb']) ch = p['sb'];
-
-                return { wc: WC_MATCHES, div, conf, sb, ch };
+            calcTree: (p) => {
+                p=p||{}; let wc={A:[],N:[]}; WC_MATCHES.forEach(m=>{if(p[m.id])wc[TEAMS[p[m.id]].c].push(p[m.id])});
+                let div=[]; ['A','N'].forEach(c=>{ if(wc[c].length===3){let s1=Object.keys(TEAMS).find(t=>TEAMS[t].c===c&&TEAMS[t].s===1); let pl=[s1,...wc[c]].sort((a,b)=>TEAMS[a].s-TEAMS[b].s); div.push({id:`${c}d1`,h:pl[0],a:pl[3],c:c},{id:`${c}d2`,h:pl[1],a:pl[2],c:c});}else{div.push({id:`${c}d1`,ph:true,c:c},{id:`${c}d2`,ph:true,c:c});}});
+                let conf=[]; let dw={A:[],N:[]}; div.forEach(m=>{if(!m.ph&&p[m.id]&&(p[m.id]===m.h||p[m.id]===m.a))dw[m.c].push(p[m.id])});
+                ['A','N'].forEach(c=>{ if(dw[c].length===2){let s=dw[c].sort((a,b)=>TEAMS[a].s-TEAMS[b].s); conf.push({id:`${c}c`,h:s[0],a:s[1],c:c});}else{conf.push({id:`${c}c`,ph:true,c:c});}});
+                let sb={id:'sb',ph:true}, ma=conf.find(m=>m.c==='A'), mn=conf.find(m=>m.c==='N'), ac=(ma&&!ma.ph&&p[ma.id])?p[ma.id]:null, nc=(mn&&!mn.ph&&p[mn.id])?p[mn.id]:null;
+                if(ac&&nc)sb={id:'sb',h:ac,a:nc}; let ch=null; if(!sb.ph&&p['sb'])ch=p['sb'];
+                return {wc:WC_MATCHES,div,conf,sb,ch};
             },
-
-            renderSplitBracket: (contId, src, mode) => {
-                const t = app.calcTree(src);
-                const c = document.getElementById(contId); c.innerHTML = '';
-                const rounds = [{ t: 'Wild Card', d: t.wc }, { t: 'Divisional', d: t.div }, { t: 'Conference', d: t.conf }];
-                
-                const canEdit = (mode === 'admin');
-                const realResults = state.db.results || {};
-
-                rounds.forEach(rnd => {
-                    const w = document.createElement('div'); w.className = 'round-wrapper';
-                    w.innerHTML = `<div class="round-title">${rnd.t}</div>`;
-                    const g = document.createElement('div'); g.className = 'matches-grid';
-                    const colA = document.createElement('div');
-                    const colN = document.createElement('div');
-
-                    rnd.d.forEach(m => {
-                        let isAFC = false;
-                        if(m.ph) isAFC = (m.c === 'A'); else isAFC = (TEAMS[m.h].c === 'A');
-                        const target = isAFC ? colA : colN;
-
-                        if(m.ph) {
-                            const ph = document.createElement('div'); ph.className = 'ph-box'; ph.innerText = 'Por definir...';
-                            target.appendChild(ph);
-                        } else {
-                            const card = document.createElement('div'); card.className = 'match-card';
-                            [m.h, m.a].forEach(tm => {
-                                const dat = TEAMS[tm];
-                                const userSelected = src[m.id] === tm;
-                                const isRealWinner = realResults[m.id] === tm;
-                                const matchFinished = (realResults[m.id] && TEAMS[realResults[m.id]]);
-
-                                const r = document.createElement('div');
-                                let classes = 'team-row ';
-                                let iconHtml = '';
-                                
-                                if(mode === 'read-official') {
-                                    if(userSelected) { 
-                                        classes += 'active-team ';
-                                        iconHtml = '<i class="fa-solid fa-trophy status-icon icon-check"></i>';
-                                    }
-                                } else if(mode === 'read') {
-                                    if(userSelected) {
-                                        if(matchFinished) {
-                                            if(isRealWinner) {
-                                                classes += 'active-team ';
-                                                iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>';
-                                            } else {
-                                                classes += 'eliminated ';
-                                                iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>';
-                                            }
-                                        } else { classes += 'active-team '; }
-                                    } else if(isRealWinner) { classes += 'active-team '; }
-                                } else if(mode === 'admin') {
-                                    if(userSelected) classes += 'active-team ';
-                                }
-                                
-                                r.className = classes;
-                                r.style.setProperty('--team-color', dat.color);
-                                r.style.setProperty('--team-color-alpha', dat.color + '40');
-
-                                r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>${iconHtml}`;
-                                if(canEdit) {
-                                    r.onclick = () => { src[m.id]=tm; app.renderSplitBracket(contId, src, mode); };
-                                    r.style.cursor = 'pointer';
-                                }
-                                card.appendChild(r);
+            
+            renderSplitBracket: (cid, src, mode) => {
+                const t=app.calcTree(src), c=document.getElementById(cid), rr=state.db.results||{}, rounds=[{t:'Wild Card',d:t.wc},{t:'Divisional',d:t.div},{t:'Conference',d:t.conf}]; c.innerHTML='';
+                rounds.forEach(rnd=>{
+                    const w=document.createElement('div'); w.className='round-wrapper'; w.innerHTML=`<div class="round-title">${rnd.t}</div>`;
+                    const g=document.createElement('div'); g.className='matches-grid'; const cA=document.createElement('div'), cN=document.createElement('div');
+                    rnd.d.forEach(m=>{
+                        let isA=m.ph?(m.c==='A'):(TEAMS[m.h].c==='A'); let trg=isA?cA:cN;
+                        if(m.ph) trg.innerHTML+='<div class="ph-box">Por definir...</div>';
+                        else {
+                            const cd=document.createElement('div'); cd.className='match-card';
+                            [m.h,m.a].forEach(tm=>{
+                                const d=TEAMS[tm], sel=src[m.id]===tm, win=rr[m.id]===tm, fin=(rr[m.id]&&TEAMS[rr[m.id]]);
+                                const r=document.createElement('div'); let cl='team-row '; let ic='';
+                                if(mode==='read-official'){ if(sel){cl+='active-team winner-green '; ic='<i class="fa-solid fa-trophy status-icon icon-check"></i>';} }
+                                else if(mode==='read'){ if(sel){ if(fin){ if(win){cl+='active-team winner-green '; ic='<i class="fa-solid fa-check status-icon icon-check"></i>';}else{cl+='eliminated '; ic='<i class="fa-solid fa-xmark status-icon icon-cross"></i>';} }else{cl+='active-team ';} }else if(win){cl+='active-team winner-green ';} }
+                                else { if(sel) cl+='active-team '; }
+                                r.className=cl; r.style.setProperty('--team-color',d.color); r.style.setProperty('--team-color-alpha',d.color+'40');
+                                r.innerHTML=`<span class="team-seed">${d.s}</span><img src="${d.logo}" class="team-logo"><span class="team-name">${tm}</span>${ic}`;
+                                if(mode==='admin') r.onclick=()=>{src[m.id]=tm; app.renderSplitBracket(cid,src,mode)};
+                                cd.appendChild(r);
                             });
-                            target.appendChild(card);
+                            trg.appendChild(cd);
                         }
                     });
-                    g.appendChild(colA); g.appendChild(colN); w.appendChild(g); c.appendChild(w);
+                    g.appendChild(cA); g.appendChild(cN); w.appendChild(g); c.appendChild(w);
                 });
-
-                const w = document.createElement('div'); w.className='round-wrapper';
-                w.innerHTML = `<div class="round-title">Super Bowl</div>`;
-                const sg = document.createElement('div'); sg.className='sb-grid';
-                
-                if(t.sb.ph) {
-                    const ph = document.createElement('div'); ph.className = 'ph-box'; ph.style.width='100%'; ph.innerText = 'Por definir...';
-                    sg.appendChild(ph);
-                } else {
-                    const card = document.createElement('div'); card.className='match-card sb-card';
-                    [t.sb.h, t.sb.a].forEach(tm => {
-                        const dat = TEAMS[tm];
-                        const userSelected = src.sb === tm;
-                        const isRealWinner = realResults.sb === tm;
-                        const matchFinished = (realResults.sb && TEAMS[realResults.sb]);
-
-                        const r = document.createElement('div');
-                        let classes = 'team-row ';
-                        let iconHtml = '';
-
-                        if(mode === 'read-official') {
-                            if(userSelected) {
-                                classes += 'active-team ';
-                                iconHtml = '<i class="fa-solid fa-star status-icon" style="color:#ffd700"></i>';
-                            }
-                        } else if(mode === 'read') {
-                            if(userSelected) {
-                                if(matchFinished) {
-                                    if(isRealWinner) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>'; }
-                                    else { classes += 'eliminated '; iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>'; }
-                                } else { classes += 'active-team '; }
-                            } else if(isRealWinner) { classes += 'active-team '; }
-                        } else if(mode === 'admin') {
-                            if(userSelected) classes += 'active-team ';
-                        }
-
-                        r.className = classes;
-                        r.style.setProperty('--team-color', dat.color);
-                        r.style.setProperty('--team-color-alpha', dat.color + '60');
-
-                        r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>${iconHtml}`;
-                        if(canEdit) {
-                            r.onclick=()=>{ src.sb=tm; app.renderSplitBracket(contId, src, mode); };
-                            r.style.cursor = 'pointer';
-                        }
-                        card.appendChild(r);
+                const w=document.createElement('div'); w.className='round-wrapper'; w.innerHTML=`<div class="round-title">Super Bowl</div>`;
+                const sg=document.createElement('div'); sg.className='sb-grid';
+                if(t.sb.ph) sg.innerHTML='<div class="ph-box" style="width:100%">Por definir...</div>';
+                else {
+                    const cd=document.createElement('div'); cd.className='match-card sb-card';
+                    [t.sb.h,t.sb.a].forEach(tm=>{
+                        const d=TEAMS[tm], sel=src.sb===tm, win=rr.sb===tm, fin=(rr.sb&&TEAMS[rr.sb]);
+                        const r=document.createElement('div'); let cl='team-row '; let ic='';
+                        if(mode==='read-official'){ if(sel){cl+='active-team winner-green '; ic='<i class="fa-solid fa-star status-icon" style="color:#ffd700"></i>';} }
+                        else if(mode==='read'){ if(sel){ if(fin){ if(win){cl+='active-team winner-green '; ic='<i class="fa-solid fa-check status-icon icon-check"></i>';}else{cl+='eliminated '; ic='<i class="fa-solid fa-xmark status-icon icon-cross"></i>';} }else{cl+='active-team ';} }else if(win){cl+='active-team winner-green ';} }
+                        else { if(sel) cl+='active-team '; }
+                        r.className=cl; r.style.setProperty('--team-color',d.color); r.style.setProperty('--team-color-alpha',d.color+'60');
+                        r.innerHTML=`<span class="team-seed">${d.s}</span><img src="${d.logo}" class="team-logo"><span class="team-name">${tm}</span>${ic}`;
+                        if(mode==='admin') r.onclick=()=>{src.sb=tm; app.renderSplitBracket(cid,src,mode)};
+                        cd.appendChild(r);
                     });
-                    sg.appendChild(card);
+                    sg.appendChild(cd);
                 }
                 w.appendChild(sg); c.appendChild(w);
-
-                if(t.ch) {
-                    const dat = TEAMS[t.ch];
-                    const winDiv = document.createElement('div');
-                    winDiv.style.cssText = "text-align:center; margin-top:20px; border:1px solid #333; padding:20px; border-radius:12px; background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(255, 215, 0, 0.1)); border-color: var(--gold); box-shadow:0 10px 30px rgba(0,0,0,0.5);";
-                    winDiv.innerHTML = `<small style="color:var(--gold); font-weight:bold; letter-spacing:2px;">CAMPEÓN SUPER BOWL</small><br><img src="${dat.logo}" style="width:70px; margin-top:15px; filter:drop-shadow(0 0 10px ${dat.color})"><h2 style="margin:10px 0 0 0; color:white; font-size:1.5rem;">${t.ch}</h2>`;
-                    c.appendChild(winDiv);
+                if(t.ch && mode!=='admin'){
+                    const d=TEAMS[t.ch];
+                    const wd=document.createElement('div'); wd.style.cssText="text-align:center; margin-top:20px; padding:20px; background:linear-gradient(135deg, rgba(0,0,0,0.4), rgba(234, 179, 8, 0.1)); border:1px solid #eab308; border-radius:12px;";
+                    wd.innerHTML=`<small style="color:#eab308; font-weight:800; letter-spacing:2px;">CAMPEÓN</small><br><img src="${d.logo}" style="width:70px; margin-top:15px;"><h2 style="margin:10px 0 0 0; color:white;">${t.ch}</h2>`;
+                    c.appendChild(wd);
                 }
-            },
-
-            adminLogin:()=>{
-                if(document.getElementById('adminPass').value==='123Marcos') {
-                    document.getElementById('adminPanel').style.display='block';
-                    state.admin = state.db.results || {};
-                    app.renderSplitBracket('adminBracket', state.admin, 'admin');
-                }
-            },
-            adminSave:()=>{
-                if(confirm("¿Publicar Resultados Oficiales?")) set(ref(db,'results'), state.admin);
             },
 
             renderRank: () => {
-                const l = document.getElementById('rankingList');
-                if(!state.db.users) { l.innerHTML="<div style='text-align:center;color:#555;margin-top:20px;'>Cargando datos...</div>"; return; }
-                const real = state.db.results || {};
-                const scores = [];
-                const rt = app.calcTree(real);
-
-                let totalPlayed = 0;
-                WC_MATCHES.forEach(m => { if(real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
-                rt.div.forEach(m => { if(!m.ph && real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
-                rt.conf.forEach(m => { if(!m.ph && real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
-                if(rt.ch && TEAMS[rt.ch]) totalPlayed++;
-
-                Object.keys(state.db.users).forEach(u => {
-                    const p = state.db.users[u].picks || {};
-                    let pts = 0;
-                    let hits = 0;
-                    const ut = app.calcTree(p);
-
-                    WC_MATCHES.forEach(m => { if(real[m.id] && p[m.id] === real[m.id]) { pts += 2; hits++; } });
-                    const checkMatchup = (rM, uM) => {
-                        if(!rM || !uM || rM.ph || uM.ph) return false;
-                        const rT = [rM.h, rM.a].sort().join('-'); const uT = [uM.h, uM.a].sort().join('-');
-                        return rT === uT;
-                    };
-                    rt.div.forEach(rM => {
-                        const uM = ut.div.find(m => m.id === rM.id);
-                        if(checkMatchup(rM, uM)) pts += 1;
-                        if(real[rM.id] && p[rM.id] === real[rM.id]) { pts += 3; hits++; }
-                    });
-                    rt.conf.forEach(rM => {
-                        const uM = ut.conf.find(m => m.id === rM.id);
-                        if(checkMatchup(rM, uM)) pts += 1;
-                        if(real[rM.id] && p[rM.id] === real[rM.id]) { pts += 4; hits++; }
-                    });
-                    const rSB = rt.sb; const uSB = ut.sb;
-                    if(checkMatchup(rSB, uSB)) pts += 1;
-                    if(rt.ch && ut.ch === rt.ch) { pts += 5; hits++; }
-
-                    scores.push({name:u, pts, winner: ut.ch, hits});
+                const l=document.getElementById('rankingList'); if(!state.db.users){l.innerHTML="<div class='ph-box'>Cargando...</div>";return}
+                const rr=state.db.results||{}, scores=[], rt=app.calcTree(rr);
+                let tp=0; WC_MATCHES.forEach(m=>{if(rr[m.id]&&TEAMS[rr[m.id]])tp++}); rt.div.forEach(m=>{if(!m.ph&&rr[m.id])tp++}); rt.conf.forEach(m=>{if(!m.ph&&rr[m.id])tp++}); if(rt.ch)tp++;
+                
+                Object.keys(state.db.users).forEach(u=>{
+                    const p=state.db.users[u].picks||{}; let pts=0, h=0, ut=app.calcTree(p);
+                    WC_MATCHES.forEach(m=>{if(rr[m.id]&&p[m.id]===rr[m.id]){pts+=2;h++}});
+                    const chk=(r,u)=>{if(!r||!u||r.ph||u.ph)return false; return [r.h,r.a].sort().join('-')===[u.h,u.a].sort().join('-')};
+                    rt.div.forEach(m=>{ let um=ut.div.find(x=>x.id===m.id); if(chk(m,um))pts+=1; if(rr[m.id]&&p[m.id]===rr[m.id]){pts+=3;h++} });
+                    rt.conf.forEach(m=>{ let um=ut.conf.find(x=>x.id===m.id); if(chk(m,um))pts+=1; if(rr[m.id]&&p[m.id]===rr[m.id]){pts+=4;h++} });
+                    if(chk(rt.sb,ut.sb))pts+=1; if(rt.ch&&ut.ch===rt.ch){pts+=5;h++}
+                    scores.push({name:u,pts,h,winner:ut.ch});
                 });
-                scores.sort((a,b) => b.pts - a.pts);
+                scores.sort((a,b)=>b.pts-a.pts);
                 
                 l.innerHTML='';
                 scores.forEach((s,i)=>{
-                    const d=document.createElement('div'); d.className='rank-row';
-                    let champHtml = s.winner && TEAMS[s.winner] ? `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview">` : `<div class="rank-champ-preview" style="background:transparent; border:1px dashed #444;"></div>`;
-                    let posColor = '#555';
-                    if(i===0) posColor = 'var(--gold)';
-                    if(i===1) posColor = '#c0c0c0';
-                    if(i===2) posColor = '#cd7f32';
+                    const d=document.createElement('div');
+                    
+                    // ESCUDO ESTILO NOTICIAS
+                    const champTeam = s.winner ? TEAMS[s.winner] : null;
+                    const teamColor = champTeam ? champTeam.color : '#444';
+                    const teamLogo = champTeam ? champTeam.logo : '';
+                    const hasWinner = champTeam ? true : false;
+                    
+                    // Estilo dinámico si tiene ganador
+                    let rowStyle = hasWinner ? 
+                        `background: linear-gradient(135deg, var(--surface) 30%, ${teamColor}20 100%); border-left: 5px solid ${teamColor};` 
+                        : 'border-left: 5px solid #333;';
+                    
+                    let champHtml = hasWinner ? 
+                        `<img src="${teamLogo}" class="rank-champ-logo">` 
+                        : '';
 
-                    let percent = totalPlayed > 0 ? (s.hits / totalPlayed) * 100 : 0;
+                    d.className='card-style-magazine rank-card';
+                    d.style.cssText = rowStyle;
+
+                    let percent = tp > 0 ? (s.h / tp) * 100 : 0;
 
                     d.innerHTML=`
-                        <div class="rank-info">
-                            <span class="rank-pos" style="color:${posColor}">#${i+1}</span>
-                            <div class="rank-details">
-                                <span class="rank-name">${s.name}</span>
+                        ${hasWinner ? `<img src="${teamLogo}" class="card-watermark">` : ''}
+                        <div class="rank-left">
+                            <div class="rank-number" style="color:${i===0? 'var(--gold)' : (i===1? '#c0c0c0' : (i===2? '#cd7f32' : '#666'))}">${i+1}</div>
+                            <div class="rank-user-info">
+                                <span class="rank-user-name">${s.name}</span>
                                 <div class="progress-bg"><div class="progress-fill" style="width:${percent}%"></div></div>
-                                <span class="rank-sub">${s.hits}/${totalPlayed} Aciertos</span>
+                                <span class="rank-stats-text">${s.h}/${tp} Aciertos</span>
                             </div>
                         </div>
                         <div class="rank-right">
                             <span class="rank-pts">${s.pts} pts</span>
-                            ${champHtml}
                         </div>
                     `;
-                    d.onclick = () => {
-                        document.getElementById('viewModal').style.display='block';
-                        document.getElementById('viewModalTitle').innerText = s.name;
-                        app.renderSplitBracket('viewModalBody', state.db.users[s.name].picks || {}, 'read');
-                    };
+                    d.onclick=()=>{ document.getElementById('viewModal').style.display='block'; document.getElementById('viewModalTitle').innerText=s.name; app.renderSplitBracket('viewModalBody',state.db.users[s.name].picks||{},'read'); };
                     l.appendChild(d);
                 });
-            }
+            },
+            
+            adminLogin:()=>{ if(document.getElementById('adminPass').value==='123Marcos'){ document.getElementById('adminPanel').style.display='block'; state.admin=state.db.results||{}; app.renderSplitBracket('adminBracket',state.admin,'admin'); } },
+            adminSave:()=>{ if(confirm("¿Guardar Oficiales?")) set(ref(db,'results'),state.admin); }
         };
         app.init();
     </script>
