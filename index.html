@@ -17,6 +17,9 @@
             --danger: #ff5252;
             --gold: #ffd700;
             --nav-height: 60px;
+            --td-color: #00c853;
+            --fg-color: #2962ff;
+            --sf-color: #d50000;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -134,25 +137,41 @@
 
         /* MODAL PARTIDO DETALLES */
         .match-modal-header { text-align: center; padding: 20px; background: #111; border-bottom: 1px solid #333; }
-        .mm-score-board { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 15px; }
-        .mm-score { font-size: 2.5rem; font-weight: 900; color: white; }
+        .mm-score-board { display: flex; justify-content: center; align-items: center; gap: 30px; margin-top: 15px; }
+        .mm-logo-big { width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 0 15px rgba(255,255,255,0.1)); }
+        
+        .mm-score { font-size: 3rem; font-weight: 900; color: white; }
+        .mm-score.pre-game { font-size: 2rem; color: #666; letter-spacing: 2px; }
+        
         .mm-meta { text-align: center; padding: 10px; color: #888; font-size: 0.8rem; border-bottom: 1px solid #333; background: #151515; }
         
-        /* ANOTACIONES */
+        /* POSESION */
+        .ball-icon { display:none; color: #ff9800; font-size: 1.2rem; margin-top: 5px; animation: bounce 1s infinite; }
+        .has-possession .ball-icon { display: block; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+        /* ANOTACIONES MEJORADAS */
         .scoring-list { padding: 15px; }
-        .scoring-item { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; border-bottom: 1px solid #222; padding-bottom: 10px; }
-        .si-logo { width: 30px; height: 30px; object-fit: contain; background: #ddd; border-radius: 50%; padding: 2px; }
+        .scoring-item { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; border-bottom: 1px solid #222; padding-bottom: 12px; }
+        .si-logo { width: 40px; height: 40px; object-fit: contain; background: #1a1a1a; border-radius: 50%; padding: 4px; border: 1px solid #333; }
         .si-content { flex: 1; }
-        .si-time { font-size: 0.65rem; color: var(--gold); font-weight: bold; margin-bottom: 2px; }
-        .si-text { font-size: 0.8rem; color: #ddd; line-height: 1.3; }
-        .si-score { font-size: 0.8rem; font-weight: 900; color: white; margin-left: auto; align-self: center; }
+        .si-time { font-size: 0.65rem; color: #777; margin-bottom: 4px; font-weight: 600; }
+        
+        /* BADGES DE ANOTACION */
+        .score-tag { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-right: 6px; color:black; text-transform: uppercase; display: inline-block; vertical-align: middle; }
+        .tag-td { background: var(--td-color); box-shadow: 0 0 10px rgba(0, 200, 83, 0.4); }
+        .tag-fg { background: var(--fg-color); color: white; }
+        .tag-sf { background: var(--sf-color); color: white; }
+        
+        .si-desc { font-size: 0.85rem; color: #ddd; line-height: 1.3; }
+        .si-score { font-size: 1rem; font-weight: 900; color: white; margin-left: auto; align-self: center; background:#222; padding: 5px 10px; border-radius: 6px; border: 1px solid #444; }
 
         /* LIDERES EN MODAL */
         .game-leaders { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 15px 20px 15px; }
         .gl-box { background: #222; border-radius: 6px; padding: 10px; display: flex; gap: 10px; align-items: center; border: 1px solid #333; }
         .gl-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: top; background: #333; }
-        .gl-info { display: flex; flex-direction: column; }
-        .gl-name { font-size: 0.75rem; font-weight: bold; color: white; }
+        .gl-info { display: flex; flex-direction: column; overflow: hidden; }
+        .gl-name { font-size: 0.75rem; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .gl-stat { font-size: 0.7rem; color: var(--accent); }
 
         /* BARRA DE PREDICCION */
@@ -509,101 +528,126 @@
                     const home = comp.competitors[1];
                     const away = comp.competitors[0];
                     const venue = detailed.gameInfo ? detailed.gameInfo.venue.fullName : 'Estadio';
+                    const statusState = detailed.header.competitions[0].status.type.state; // 'pre', 'in', 'post'
                     
+                    // FIX UNDEFINED SCORE: SI ES 'PRE', NO MOSTRAR 0-0 SINO VS o HORA
+                    let scoreDisplay = "";
+                    let timeStr = "";
+                    if(statusState === 'pre') {
+                        const gameDate = new Date(detailed.header.competitions[0].date);
+                        timeStr = gameDate.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+                        scoreDisplay = `<span class="mm-score pre-game">${timeStr}</span>`;
+                    } else {
+                        scoreDisplay = `<div class="mm-score">${home.score || 0} - ${away.score || 0}</div>`;
+                    }
+
+                    // FIX LOGOS: BUSCAR EN ARRAY DE LOGOS O FALLBACK
+                    const getLogo = (t) => (t.team.logos && t.team.logos[0] && t.team.logos[0].href) || t.team.logo || 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png';
+                    const homeLogo = getLogo(home);
+                    const awayLogo = getLogo(away);
+
+                    // LOGICA POSESION (SOLO SI ESTÁ EN JUEGO)
+                    let possessionTeamId = null;
+                    if(statusState === 'in' && detailed.header.competitions[0].situation && detailed.header.competitions[0].situation.possession) {
+                        possessionTeamId = detailed.header.competitions[0].situation.possession;
+                    }
+                    const homeClass = (possessionTeamId === home.id) ? 'has-possession' : '';
+                    const awayClass = (possessionTeamId === away.id) ? 'has-possession' : '';
+
                     let homePct = 55; let awayPct = 45;
                     if(detailed.predictor) {
                         homePct = detailed.predictor.homeTeam.gameProjection;
                         awayPct = 100 - homePct;
                     }
 
-                    // PROCESAR JUGADAS (SCORING)
-                    let scoringHtml = '';
-                    if(detailed.scoringPlays && detailed.scoringPlays.length > 0) {
-                        detailed.scoringPlays.forEach(play => {
-                            const teamLogo = play.team.logo || 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png';
-                            // Mini traductor
-                            let text = play.text.replace('Touchdown', 'Touchdown').replace('Field Goal', 'Gol de Campo').replace('Safety', 'Safety').replace('pass', 'pase').replace('run', 'carrera').replace('good', 'bueno');
-                            
-                            scoringHtml += `
-                                <div class="scoring-item">
-                                    <img src="${teamLogo}" class="si-logo">
-                                    <div class="si-content">
-                                        <div class="si-time">${play.clock.displayValue} - Q${play.period.number}</div>
-                                        <div class="si-text">${text}</div>
-                                    </div>
-                                    <div class="si-score">${play.homeScore}-${play.awayScore}</div>
-                                </div>
-                            `;
-                        });
+                    // --- GENERACIÓN DE CONTENIDO CONDICIONAL ---
+                    let bottomContent = '';
+
+                    if(statusState === 'pre') {
+                        // SI ES PREVIA: Solo mostrar hora y ocultar lideres/anotaciones
+                        bottomContent = `
+                            <div style="text-align:center; padding:30px; color:#666;">
+                                <i class="fa-regular fa-clock" style="font-size:2rem; margin-bottom:10px;"></i>
+                                <div>El partido comienza a las <b>${timeStr}</b></div>
+                                <div style="font-size:0.7rem; margin-top:5px;">Las estadísticas estarán disponibles al inicio.</div>
+                            </div>
+                        `;
                     } else {
-                        scoringHtml = '<div style="text-align:center;color:#666;padding:20px;">Sin anotaciones aún.</div>';
-                    }
-
-                    // PROCESAR LIDERES (Si existen)
-                    let leadersHtml = '';
-                    if(detailed.leaders) {
-                        // Check if leaders is directly an array or inside boxscore
-                        const leadersArr = Array.isArray(detailed.leaders) ? detailed.leaders : [];
-                        
-                        leadersArr.forEach(cat => {
-                            const l = cat.leaders[0]; // Top leader
-                            if(l) {
-                                leadersHtml += `
-                                    <div class="gl-box">
-                                        <img src="${l.athlete.headshot}" class="gl-img">
-                                        <div class="gl-info">
-                                            <span class="gl-name">${l.athlete.shortName}</span>
-                                            <span class="gl-stat">${l.displayValue} (${cat.displayName})</span>
+                        // SI ESTA EN JUEGO O FINALIZADO: Mostrar todo
+                        let scoringHtml = '';
+                        if(detailed.scoringPlays && detailed.scoringPlays.length > 0) {
+                            detailed.scoringPlays.forEach(play => {
+                                const teamLogo = (play.team && play.team.logo) || 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png';
+                                let typeText = play.type ? play.type.text : "Anotación";
+                                let badgeClass = '', badgeLabel = 'PUNTOS';
+                                if(typeText.includes('Touchdown')) { badgeClass = 'tag-td'; badgeLabel = 'TOUCHDOWN'; }
+                                else if(typeText.includes('Field Goal')) { badgeClass = 'tag-fg'; badgeLabel = 'GOL DE CAMPO'; }
+                                else if(typeText.includes('Safety')) { badgeClass = 'tag-sf'; badgeLabel = 'SAFETY'; }
+                                
+                                scoringHtml += `
+                                    <div class="scoring-item">
+                                        <img src="${teamLogo}" class="si-logo">
+                                        <div class="si-content">
+                                            <div class="si-time">${play.clock.displayValue} - Q${play.period.number}</div>
+                                            <div style="margin-bottom:4px;"><span class="score-tag ${badgeClass}">${badgeLabel}</span></div>
+                                            <div class="si-desc">${play.text}</div>
                                         </div>
-                                    </div>
-                                `;
-                            }
-                        });
-                    }
-                    if(leadersHtml === '') {
-                        leadersHtml = '<div style="text-align:center;color:#666; font-size:0.8rem; width:100%">Estadísticas disponibles al inicio.</div>';
+                                        <div class="si-score">${play.homeScore}-${play.awayScore}</div>
+                                    </div>`;
+                            });
+                        } else { scoringHtml = '<div style="text-align:center;color:#666;padding:20px;">Sin anotaciones aún.</div>'; }
+
+                        let leadersHtml = '';
+                        if(detailed.leaders) {
+                            const leadersArr = Array.isArray(detailed.leaders) ? detailed.leaders : [];
+                            leadersArr.forEach(cat => {
+                                if (cat.leaders && cat.leaders.length > 0) {
+                                    const l = cat.leaders[0];
+                                    if(l && l.athlete) {
+                                        const img = l.athlete.headshot || "https://a.espncdn.com/i/headshots/nfl/players/full/default.png";
+                                        const name = l.athlete.shortName || l.athlete.displayName || "Jugador";
+                                        leadersHtml += `<div class="gl-box"><img src="${img}" class="gl-img"><div class="gl-info"><span class="gl-name">${name}</span><span class="gl-stat">${l.displayValue} (${cat.displayName})</span></div></div>`;
+                                    }
+                                }
+                            });
+                        }
+                        if(leadersHtml === '') leadersHtml = '<div style="text-align:center;color:#666; font-size:0.8rem; width:100%">Estadísticas disponibles al inicio.</div>';
+
+                        bottomContent = `
+                            <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Líderes del Partido</h4>
+                            <div class="game-leaders">${leadersHtml}</div>
+                            <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Anotaciones (Minuto a Minuto)</h4>
+                            <div class="scoring-list">${scoringHtml}</div>
+                        `;
                     }
 
+                    // RENDER FINAL DEL MODAL
                     content.innerHTML = `
                         <div class="match-modal-header">
                             <div style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">${venue}</div>
                             <div class="mm-score-board">
-                                <div style="text-align:center">
-                                    <img src="${home.team.logo}" style="width:60px; height:60px; object-fit:contain">
-                                    <div style="font-weight:900; font-size:1.5rem; margin-top:5px;">${home.team.abbreviation}</div>
+                                <div style="text-align:center" class="${homeClass}">
+                                    <img src="${homeLogo}" class="mm-logo-big">
+                                    <i class="fa-solid fa-football-ball ball-icon"></i>
+                                    <div style="font-weight:900; font-size:1.5rem; margin-top:10px;">${home.team.abbreviation}</div>
                                 </div>
-                                <div class="mm-score">${home.score} - ${away.score}</div>
-                                <div style="text-align:center">
-                                    <img src="${away.team.logo}" style="width:60px; height:60px; object-fit:contain">
-                                    <div style="font-weight:900; font-size:1.5rem; margin-top:5px;">${away.team.abbreviation}</div>
+                                ${scoreDisplay}
+                                <div style="text-align:center" class="${awayClass}">
+                                    <img src="${awayLogo}" class="mm-logo-big">
+                                    <i class="fa-solid fa-football-ball ball-icon"></i>
+                                    <div style="font-weight:900; font-size:1.5rem; margin-top:10px;">${away.team.abbreviation}</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="mm-meta">
-                            Estado: <span style="color:#fff; font-weight:bold">${detailed.header.competitions[0].status.type.detail}</span>
-                        </div>
-                        
+                        <div class="mm-meta">Estado: <span style="color:#fff; font-weight:bold">${detailed.header.competitions[0].status.type.detail}</span></div>
                         <div class="prediction-box">
                             <div class="pred-title">Probabilidad de Victoria (ESPN Analytics)</div>
                             <div class="pred-bar" style="--team-a-color: #${home.team.color}; --team-b-color: #${away.team.color}">
-                                <div class="pred-fill-l" style="width:${homePct}%"></div>
-                                <div class="pred-fill-r"></div>
+                                <div class="pred-fill-l" style="width:${homePct}%"></div><div class="pred-fill-r"></div>
                             </div>
-                            <div class="pred-labels">
-                                <span style="color:#${home.team.color}">${Math.round(homePct)}% ${home.team.name}</span>
-                                <span style="color:#${away.team.color}">${Math.round(awayPct)}% ${away.team.name}</span>
-                            </div>
+                            <div class="pred-labels"><span style="color:#${home.team.color}">${Math.round(homePct)}% ${home.team.name}</span><span style="color:#${away.team.color}">${Math.round(awayPct)}% ${away.team.name}</span></div>
                         </div>
-
-                        <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Líderes del Partido</h4>
-                        <div class="game-leaders">
-                            ${leadersHtml}
-                        </div>
-
-                        <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Anotaciones (Minuto a Minuto)</h4>
-                        <div class="scoring-list">
-                            ${scoringHtml}
-                        </div>
+                        ${bottomContent}
                     `;
 
                 } catch(e) {
@@ -616,43 +660,29 @@
                 const p = picksSource || {};
                 let wc = {A:[], N:[]};
                 WC_MATCHES.forEach(m => { if(p[m.id]) wc[TEAMS[p[m.id]].c].push(p[m.id]); });
-
                 let div = [];
                 ['A', 'N'].forEach(c => {
                     if(wc[c].length === 3) {
                         const s1 = Object.keys(TEAMS).find(t => TEAMS[t].c === c && TEAMS[t].s === 1);
                         let pool = [s1, ...wc[c]].sort((a,b) => TEAMS[a].s - TEAMS[b].s);
-                        div.push({ id:`${c}d1`, h:pool[0], a:pool[3], c:c });
-                        div.push({ id:`${c}d2`, h:pool[1], a:pool[2], c:c });
-                    } else {
-                        div.push({ id:`${c}d1`, ph:true, c:c }, { id:`${c}d2`, ph:true, c:c });
-                    }
+                        div.push({ id:`${c}d1`, h:pool[0], a:pool[3], c:c }); div.push({ id:`${c}d2`, h:pool[1], a:pool[2], c:c });
+                    } else { div.push({ id:`${c}d1`, ph:true, c:c }, { id:`${c}d2`, ph:true, c:c }); }
                 });
-
                 let conf = [];
                 let divWinners = {A:[], N:[]};
-                div.forEach(match => { 
-                    if(!match.ph && p[match.id] && (p[match.id] === match.h || p[match.id] === match.a)) {
-                        divWinners[match.c].push(p[match.id]);
-                    }
-                });
+                div.forEach(match => { if(!match.ph && p[match.id] && (p[match.id] === match.h || p[match.id] === match.a)) divWinners[match.c].push(p[match.id]); });
                 ['A', 'N'].forEach(c => {
                     if(divWinners[c].length === 2) {
                         let sorted = divWinners[c].sort((a,b) => TEAMS[a].s - TEAMS[b].s);
                         conf.push({ id:`${c}c`, h:sorted[0], a:sorted[1], c:c });
                     } else conf.push({ id:`${c}c`, ph:true, c:c });
                 });
-
                 let sb = { id:'sb', ph:true };
-                const matchA = conf.find(m => m.c === 'A');
-                const matchN = conf.find(m => m.c === 'N');
+                const matchA = conf.find(m => m.c === 'A'); const matchN = conf.find(m => m.c === 'N');
                 const aChamp = (matchA && !matchA.ph && p[matchA.id]) ? p[matchA.id] : null;
                 const nChamp = (matchN && !matchN.ph && p[matchN.id]) ? p[matchN.id] : null;
-
                 if(aChamp && nChamp) sb = { id:'sb', h:aChamp, a:nChamp };
-                let ch = null;
-                if(!sb.ph && p['sb']) ch = p['sb'];
-
+                let ch = null; if(!sb.ph && p['sb']) ch = p['sb'];
                 return { wc: WC_MATCHES, div, conf, sb, ch };
             },
 
@@ -660,67 +690,36 @@
                 const t = app.calcTree(src);
                 const c = document.getElementById(contId); c.innerHTML = '';
                 const rounds = [{ t: 'Wild Card', d: t.wc }, { t: 'Divisional', d: t.div }, { t: 'Conference', d: t.conf }];
-                
                 const canEdit = (mode === 'admin');
                 const realResults = state.db.results || {};
-
                 rounds.forEach(rnd => {
                     const w = document.createElement('div'); w.className = 'round-wrapper';
                     w.innerHTML = `<div class="round-title">${rnd.t}</div>`;
                     const g = document.createElement('div'); g.className = 'matches-grid';
-                    const colA = document.createElement('div');
-                    const colN = document.createElement('div');
-
+                    const colA = document.createElement('div'); const colN = document.createElement('div');
                     rnd.d.forEach(m => {
-                        let isAFC = false;
-                        if(m.ph) isAFC = (m.c === 'A'); else isAFC = (TEAMS[m.h].c === 'A');
+                        let isAFC = m.ph ? (m.c === 'A') : (TEAMS[m.h].c === 'A');
                         const target = isAFC ? colA : colN;
-
-                        if(m.ph) {
-                            const ph = document.createElement('div'); ph.className = 'ph-box'; ph.innerText = 'Por definir...';
-                            target.appendChild(ph);
-                        } else {
+                        if(m.ph) { target.innerHTML += '<div class="ph-box">Por definir...</div>'; } else {
                             const card = document.createElement('div'); card.className = 'match-card';
                             [m.h, m.a].forEach(tm => {
                                 const dat = TEAMS[tm];
                                 const userSelected = src[m.id] === tm;
                                 const isRealWinner = realResults[m.id] === tm;
                                 const matchFinished = (realResults[m.id] && TEAMS[realResults[m.id]]);
-
                                 const r = document.createElement('div');
-                                let classes = 'team-row ';
-                                let iconHtml = '';
-                                
-                                if(mode === 'read-official') {
-                                    if(userSelected) { 
-                                        classes += 'active-team ';
-                                        iconHtml = '<i class="fa-solid fa-trophy status-icon icon-check"></i>';
-                                    }
-                                } else if(mode === 'read') {
+                                let classes = 'team-row '; let iconHtml = '';
+                                if(mode === 'read-official') { if(userSelected) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-trophy status-icon icon-check"></i>'; } }
+                                else if(mode === 'read') {
                                     if(userSelected) {
-                                        if(matchFinished) {
-                                            if(isRealWinner) {
-                                                classes += 'active-team ';
-                                                iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>';
-                                            } else {
-                                                classes += 'eliminated ';
-                                                iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>';
-                                            }
-                                        } else { classes += 'active-team '; }
+                                        if(matchFinished) { if(isRealWinner) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>'; } else { classes += 'eliminated '; iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>'; } }
+                                        else { classes += 'active-team '; }
                                     } else if(isRealWinner) { classes += 'active-team '; }
-                                } else if(mode === 'admin') {
-                                    if(userSelected) classes += 'active-team ';
-                                }
-                                
+                                } else if(mode === 'admin') { if(userSelected) classes += 'active-team '; }
                                 r.className = classes;
-                                r.style.setProperty('--team-color', dat.color);
-                                r.style.setProperty('--team-color-alpha', dat.color + '40');
-
+                                r.style.setProperty('--team-color', dat.color); r.style.setProperty('--team-color-alpha', dat.color + '40');
                                 r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>${iconHtml}`;
-                                if(canEdit) {
-                                    r.onclick = () => { src[m.id]=tm; app.renderSplitBracket(contId, src, mode); };
-                                    r.style.cursor = 'pointer';
-                                }
+                                if(canEdit) { r.onclick = () => { src[m.id]=tm; app.renderSplitBracket(contId, src, mode); }; r.style.cursor = 'pointer'; }
                                 card.appendChild(r);
                             });
                             target.appendChild(card);
@@ -728,57 +727,32 @@
                     });
                     g.appendChild(colA); g.appendChild(colN); w.appendChild(g); c.appendChild(w);
                 });
-
-                const w = document.createElement('div'); w.className='round-wrapper';
-                w.innerHTML = `<div class="round-title">Super Bowl</div>`;
+                const w = document.createElement('div'); w.className='round-wrapper'; w.innerHTML = `<div class="round-title">Super Bowl</div>`;
                 const sg = document.createElement('div'); sg.className='sb-grid';
-                
-                if(t.sb.ph) {
-                    const ph = document.createElement('div'); ph.className = 'ph-box'; ph.style.width='100%'; ph.innerText = 'Por definir...';
-                    sg.appendChild(ph);
-                } else {
+                if(t.sb.ph) { sg.innerHTML = '<div class="ph-box" style="width:100%">Por definir...</div>'; } else {
                     const card = document.createElement('div'); card.className='match-card sb-card';
                     [t.sb.h, t.sb.a].forEach(tm => {
                         const dat = TEAMS[tm];
                         const userSelected = src.sb === tm;
                         const isRealWinner = realResults.sb === tm;
                         const matchFinished = (realResults.sb && TEAMS[realResults.sb]);
-
                         const r = document.createElement('div');
-                        let classes = 'team-row ';
-                        let iconHtml = '';
-
-                        if(mode === 'read-official') {
+                        let classes = 'team-row '; let iconHtml = '';
+                        if(mode === 'read-official') { if(userSelected) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-star status-icon" style="color:#ffd700"></i>'; } }
+                        else if(mode === 'read') {
                             if(userSelected) {
-                                classes += 'active-team ';
-                                iconHtml = '<i class="fa-solid fa-star status-icon" style="color:#ffd700"></i>';
-                            }
-                        } else if(mode === 'read') {
-                            if(userSelected) {
-                                if(matchFinished) {
-                                    if(isRealWinner) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>'; }
-                                    else { classes += 'eliminated '; iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>'; }
-                                } else { classes += 'active-team '; }
+                                if(matchFinished) { if(isRealWinner) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>'; } else { classes += 'eliminated '; iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>'; } }
+                                else { classes += 'active-team '; }
                             } else if(isRealWinner) { classes += 'active-team '; }
-                        } else if(mode === 'admin') {
-                            if(userSelected) classes += 'active-team ';
-                        }
-
-                        r.className = classes;
-                        r.style.setProperty('--team-color', dat.color);
-                        r.style.setProperty('--team-color-alpha', dat.color + '60');
-
+                        } else if(mode === 'admin') { if(userSelected) classes += 'active-team '; }
+                        r.className = classes; r.style.setProperty('--team-color', dat.color); r.style.setProperty('--team-color-alpha', dat.color + '60');
                         r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>${iconHtml}`;
-                        if(canEdit) {
-                            r.onclick=()=>{ src.sb=tm; app.renderSplitBracket(contId, src, mode); };
-                            r.style.cursor = 'pointer';
-                        }
+                        if(canEdit) { r.onclick=()=>{ src.sb=tm; app.renderSplitBracket(contId, src, mode); }; r.style.cursor = 'pointer'; }
                         card.appendChild(r);
                     });
                     sg.appendChild(card);
                 }
                 w.appendChild(sg); c.appendChild(w);
-
                 if(t.ch) {
                     const dat = TEAMS[t.ch];
                     const winDiv = document.createElement('div');
@@ -788,16 +762,8 @@
                 }
             },
 
-            adminLogin:()=>{
-                if(document.getElementById('adminPass').value==='123Marcos') {
-                    document.getElementById('adminPanel').style.display='block';
-                    state.admin = state.db.results || {};
-                    app.renderSplitBracket('adminBracket', state.admin, 'admin');
-                }
-            },
-            adminSave:()=>{
-                if(confirm("¿Publicar Resultados Oficiales?")) set(ref(db,'results'), state.admin);
-            },
+            adminLogin:()=>{ if(document.getElementById('adminPass').value==='123Marcos') { document.getElementById('adminPanel').style.display='block'; state.admin = state.db.results || {}; app.renderSplitBracket('adminBracket', state.admin, 'admin'); } },
+            adminSave:()=>{ if(confirm("¿Publicar Resultados Oficiales?")) set(ref(db,'results'), state.admin); },
 
             renderRank: () => {
                 const l = document.getElementById('rankingList');
@@ -805,19 +771,15 @@
                 const real = state.db.results || {};
                 const scores = [];
                 const rt = app.calcTree(real);
-
                 let totalPlayed = 0;
                 WC_MATCHES.forEach(m => { if(real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
                 rt.div.forEach(m => { if(!m.ph && real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
                 rt.conf.forEach(m => { if(!m.ph && real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
                 if(rt.ch && TEAMS[rt.ch]) totalPlayed++;
-
                 Object.keys(state.db.users).forEach(u => {
                     const p = state.db.users[u].picks || {};
-                    let pts = 0;
-                    let hits = 0;
+                    let pts = 0; let hits = 0;
                     const ut = app.calcTree(p);
-
                     WC_MATCHES.forEach(m => { if(real[m.id] && p[m.id] === real[m.id]) { pts += 2; hits++; } });
                     const checkMatchup = (rM, uM) => {
                         if(!rM || !uM || rM.ph || uM.ph) return false;
@@ -837,41 +799,18 @@
                     const rSB = rt.sb; const uSB = ut.sb;
                     if(checkMatchup(rSB, uSB)) pts += 1;
                     if(rt.ch && ut.ch === rt.ch) { pts += 5; hits++; }
-
                     scores.push({name:u, pts, winner: ut.ch, hits});
                 });
                 scores.sort((a,b) => b.pts - a.pts);
-                
                 l.innerHTML='';
                 scores.forEach((s,i)=>{
                     const d=document.createElement('div'); d.className='rank-row';
                     let champHtml = s.winner && TEAMS[s.winner] ? `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview">` : `<div class="rank-champ-preview" style="background:transparent; border:1px dashed #444;"></div>`;
                     let posColor = '#555';
-                    if(i===0) posColor = 'var(--gold)';
-                    if(i===1) posColor = '#c0c0c0';
-                    if(i===2) posColor = '#cd7f32';
-
+                    if(i===0) posColor = 'var(--gold)'; if(i===1) posColor = '#c0c0c0'; if(i===2) posColor = '#cd7f32';
                     let percent = totalPlayed > 0 ? (s.hits / totalPlayed) * 100 : 0;
-
-                    d.innerHTML=`
-                        <div class="rank-info">
-                            <span class="rank-pos" style="color:${posColor}">#${i+1}</span>
-                            <div class="rank-details">
-                                <span class="rank-name">${s.name}</span>
-                                <div class="progress-bg"><div class="progress-fill" style="width:${percent}%"></div></div>
-                                <span class="rank-sub">${s.hits}/${totalPlayed} Aciertos</span>
-                            </div>
-                        </div>
-                        <div class="rank-right">
-                            <span class="rank-pts">${s.pts} pts</span>
-                            ${champHtml}
-                        </div>
-                    `;
-                    d.onclick = () => {
-                        document.getElementById('viewModal').style.display='block';
-                        document.getElementById('viewModalTitle').innerText = s.name;
-                        app.renderSplitBracket('viewModalBody', state.db.users[s.name].picks || {}, 'read');
-                    };
+                    d.innerHTML=`<div class="rank-info"><span class="rank-pos" style="color:${posColor}">#${i+1}</span><div class="rank-details"><span class="rank-name">${s.name}</span><div class="progress-bg"><div class="progress-fill" style="width:${percent}%"></div></div><span class="rank-sub">${s.hits}/${totalPlayed} Aciertos</span></div></div><div class="rank-right"><span class="rank-pts">${s.pts} pts</span>${champHtml}</div>`;
+                    d.onclick = () => { document.getElementById('viewModal').style.display='block'; document.getElementById('viewModalTitle').innerText = s.name; app.renderSplitBracket('viewModalBody', state.db.users[s.name].picks || {}, 'read'); };
                     l.appendChild(d);
                 });
             }
