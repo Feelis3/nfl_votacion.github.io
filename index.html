@@ -100,7 +100,8 @@
         /* MODAL PARTIDO DETALLES & SUBMENU */
         .match-modal-header { padding: 30px 20px 10px 20px; background: linear-gradient(180deg, #1a1a1a 0%, #050505 100%); border-bottom: 1px solid var(--border); text-align: center; }
         .mm-score-board { display: flex; justify-content: space-between; align-items: center; max-width: 400px; margin: 0 auto 20px auto; }
-        .mm-team { display: flex; flex-direction: column; align-items: center; width: 30%; position: relative; }
+        .mm-team { display: flex; flex-direction: column; align-items: center; width: 30%; position: relative; cursor: pointer; border-radius: 10px; transition: 0.2s; }
+        .mm-team:active { transform: scale(0.95); background: rgba(255,255,255,0.05); }
         .mm-logo-big { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.05)); }
         .mm-name-big { font-weight: 900; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
         .mm-score-big { font-size: 3rem; font-weight: 800; width: 40%; line-height: 1; }
@@ -150,6 +151,14 @@
         .pst-table td:first-child { color: white; font-weight: 700; width: 40%; }
         .pst-table tr:last-child td { border-bottom: none; }
         .pst-category-title { font-size: 0.7rem; color: var(--accent); font-weight: 900; margin: 10px 20px 5px 20px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ROSTER MODAL */
+        .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; padding: 10px 20px; }
+        .roster-card { background: var(--surface-light); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding: 15px 10px; text-align: center; }
+        .roster-img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; background: #333; border: 2px solid #333; margin-bottom: 8px; }
+        .roster-name { font-size: 0.9rem; font-weight: 700; color: white; line-height: 1.2; margin-bottom: 4px; }
+        .roster-meta { font-size: 0.7rem; color: #888; font-weight: 600; display: flex; gap: 8px; justify-content: center; }
+        .roster-num { background: #333; padding: 2px 6px; border-radius: 4px; color: white; }
 
         /* SCORING PLAYS */
         .scoring-list { padding: 0 20px 20px 20px; }
@@ -352,6 +361,15 @@
         <div id="matchModalContent" style="padding-bottom:100px;"></div>
     </div>
 
+    <div id="teamModal" class="full-modal" style="z-index: 3500;">
+        <div class="modal-nav-bar">
+            <button onclick="document.getElementById('teamModal').style.display='none'" style="background:none; border:none; color:white; font-size:1.2rem;"><i class="fa-solid fa-arrow-left"></i></button>
+            <span style="font-weight:800; color:white;">PLANTILLA</span>
+            <div style="width:20px"></div>
+        </div>
+        <div id="teamModalContent" style="padding-bottom:100px;"></div>
+    </div>
+
     <div id="viewModal" class="full-modal">
         <div class="modal-nav-bar">
             <button onclick="document.getElementById('viewModal').style.display='none'" style="background:none; border:none; color:white; font-size:1.2rem;"><i class="fa-solid fa-arrow-left"></i></button>
@@ -409,9 +427,9 @@
             { id: "n1", h: "Bears", a: "Packers" }, { id: "n2", h: "Eagles", a: "49ers" }, { id: "n3", h: "Panthers", a: "Rams" }
         ];
 
-        // CONFIGURACIÓN DERECHOS TV
-        // Añade aquí las abreviaturas de los equipos que echen en abierto
-const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
+        // CONFIGURACIÓN DERECHOS TV (Equipos en abierto)
+        const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"]; 
+
         let state = { db: {}, admin: {}, liveData: [] };
 
         window.app = {
@@ -440,7 +458,7 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
             // --- LÓGICA DE TV ---
             openTV: () => {
                 document.getElementById('tvModal').style.display='block';
-                app.changeChannel('eventos'); // Por defecto abre eventos
+                app.changeChannel('eventos'); 
             },
 
             changeChannel: (ch) => {
@@ -481,31 +499,59 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
                 try {
                     const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.espn.com.mx/espn/rss/nfl/news');
                     const data = await res.json();
-                    
                     if(data.status === 'ok') {
                         cont.innerHTML = '';
                         data.items.slice(0, 10).forEach(item => {
                             const date = new Date(item.pubDate).toLocaleDateString('es-ES', {day:'numeric', month:'short'});
                             const title = item.title;
                             let type = 'NOTICIA';
-                            if(title.toLowerCase().includes('vs') || title.toLowerCase().includes('gana') || title.toLowerCase().includes('vence')) {
-                                type = 'PARTIDO';
-                            }
-                            
-                            let teamColor = '#444';
-                            let teamLogo = '';
-                            let hasTeam = false;
-                            for (const [key, val] of Object.entries(TEAMS)) {
-                                if (title.includes(key)) { teamColor = val.color; teamLogo = val.logo; hasTeam = true; break; }
-                            }
+                            if(title.toLowerCase().includes('vs') || title.toLowerCase().includes('gana') || title.toLowerCase().includes('vence')) type = 'PARTIDO';
+                            let teamColor = '#444', teamLogo = '', hasTeam = false;
+                            for (const [key, val] of Object.entries(TEAMS)) { if (title.includes(key)) { teamColor = val.color; teamLogo = val.logo; hasTeam = true; break; } }
                             let style = `border-left: 5px solid ${teamColor};`;
                             if(hasTeam) style += `background: linear-gradient(135deg, var(--surface) 30%, ${teamColor}20 100%);`;
                             let watermark = hasTeam ? `<img src="${teamLogo}" class="card-watermark">` : '';
-
                             cont.innerHTML += `<a href="${item.link}" target="_blank" class="card-style-magazine news-card" data-type="${type}" style="${style}">${watermark}<span class="news-tag">${type}</span><div class="news-title">${title}</div><div class="news-meta"><span class="news-source">ESPN DEPORTES</span><span>${date}</span></div></a>`;
                         });
                     } else { cont.innerHTML = '<div style="text-align:center;padding:20px;">Sin conexión.</div>'; }
                 } catch(e) { cont.innerHTML = '<div style="text-align:center;padding:20px;">Error al cargar datos.</div>'; }
+            },
+
+            // --- CARGA PLANTILLA (ROSTER) ---
+            openTeamRoster: async (teamId) => {
+                const modal = document.getElementById('teamModal');
+                const content = document.getElementById('teamModalContent');
+                content.innerHTML = '<div style="text-align:center;padding:50px;color:#888;"><i class="fa-solid fa-helmet-safety fa-spin"></i><br>Cargando plantilla...</div>';
+                modal.style.display = 'block';
+
+                try {
+                    const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${teamId}/roster`);
+                    const data = await res.json();
+                    
+                    let rosterHtml = '';
+                    const groups = data.athletes || [];
+                    
+                    groups.forEach(group => {
+                        rosterHtml += `<div class="section-header">${group.position}</div><div class="roster-grid">`;
+                        group.items.forEach(p => {
+                            const img = p.headshot ? p.headshot.href : 'https://a.espncdn.com/i/headshots/nfl/players/full/0.png';
+                            rosterHtml += `
+                                <div class="roster-card">
+                                    <img src="${img}" class="roster-img">
+                                    <div class="roster-name">${p.fullName}</div>
+                                    <div class="roster-meta"><span class="roster-num">#${p.jersey}</span><span>${p.position.abbreviation}</span></div>
+                                    <div style="font-size:0.65rem; color:#666; margin-top:4px;">${p.displayHeight} • ${p.displayWeight}</div>
+                                </div>
+                            `;
+                        });
+                        rosterHtml += '</div>';
+                    });
+                    
+                    content.innerHTML = rosterHtml;
+
+                } catch(e) {
+                    content.innerHTML = '<div style="text-align:center;padding:20px;">Error cargando plantilla.</div>';
+                }
             },
 
             loadLiveGames: async () => {
@@ -524,12 +570,8 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
 
                     // ORDENAR: LIVE -> PRE -> FINAL
                     state.liveData.sort((a, b) => {
-                        const getStateWeight = (s) => {
-                            if(s === 'in') return 0;
-                            if(s === 'pre' || s === 'scheduled') return 1;
-                            return 2; // post, complete, etc.
-                        };
-                        return getStateWeight(a.status.type.state) - getStateWeight(b.status.type.state);
+                        const order = { 'in': 0, 'pre': 1, 'post': 2 };
+                        return order[a.status.type.state] - order[b.status.type.state];
                     });
 
                     c.innerHTML = '';
@@ -557,8 +599,7 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
                         // LÓGICA DEL BOTÓN TV
                         const isFinished = status === 'post' || evt.status.type.completed;
                         let showWatchBtn = false;
-                        if(!isFinished) { // Solo si no ha terminado
-                            // Comprobar si alguno de los equipos está en la lista de derechos
+                        if(!isFinished) { 
                             if(TV_RIGHTS.includes(team1.team.abbreviation) || TV_RIGHTS.includes(team2.team.abbreviation)) {
                                 showWatchBtn = true;
                             }
@@ -616,23 +657,22 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
                     const getLogo = (t) => (t.team.logos && t.team.logos[0] && t.team.logos[0].href) || t.team.logo || 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png';
                     const homeLogo = getLogo(home); const awayLogo = getLogo(away);
 
-                    let possessionTeamId = null;
-                    if(statusState === 'in' && detailed.header.competitions[0].situation && detailed.header.competitions[0].situation.possession) possessionTeamId = detailed.header.competitions[0].situation.possession;
-                    const homeClass = (possessionTeamId === home.id) ? 'has-possession' : ''; const awayClass = (possessionTeamId === away.id) ? 'has-possession' : '';
+                    let homeClass = (statusState === 'in' && detailed.header.competitions[0].situation?.possession === home.id) ? 'has-possession' : '';
+                    let awayClass = (statusState === 'in' && detailed.header.competitions[0].situation?.possession === away.id) ? 'has-possession' : '';
 
                     let homePct = 55; let awayPct = 45;
                     if(detailed.predictor) { homePct = detailed.predictor.homeTeam.gameProjection; awayPct = 100 - homePct; }
 
                     // --- GENERAR CONTENIDO DE PESTAÑAS ---
                     
-                    // 1. RESUMEN (Última jugada + Anotaciones)
+                    // 1. RESUMEN
                     let lastPlayHtml = '';
-                    if(detailed.drives && detailed.drives.current && detailed.drives.current.plays && detailed.drives.current.plays.length > 0) {
+                    if(detailed.drives?.current?.plays?.length > 0) {
                         const plays = detailed.drives.current.plays; const lastPlay = plays[plays.length - 1];
                         lastPlayHtml = `<div class="last-play-box"><div class="lp-label">ÚLTIMA JUGADA</div><div class="lp-text">${lastPlay.text}</div></div>`;
                     }
                     let scoringHtml = '';
-                    if(detailed.scoringPlays && detailed.scoringPlays.length > 0) {
+                    if(detailed.scoringPlays?.length > 0) {
                         detailed.scoringPlays.forEach(play => {
                             const teamLogo = (play.team && play.team.logo) || 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png';
                             let text = play.text.replace('Touchdown', 'Touchdown').replace('Field Goal', 'Gol de Campo').replace('Safety', 'Safety').replace('pass', 'pase').replace('run', 'carrera').replace('good', 'bueno');
@@ -648,7 +688,7 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
 
                     // 2. ESTADÍSTICAS
                     let statsHtml = '<div style="text-align:center;padding:20px;color:#666">No hay datos disponibles</div>';
-                    if(detailed.boxscore && detailed.boxscore.teams) {
+                    if(detailed.boxscore?.teams) {
                         const tm1 = detailed.boxscore.teams.find(t => t.team.id === home.id);
                         const tm2 = detailed.boxscore.teams.find(t => t.team.id === away.id);
                         if(tm1 && tm2) {
@@ -685,9 +725,9 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
                     }
                     const tabLeaders = `<div id="tab-leaders" class="mm-content-pane">${leadersHtml}</div>`;
 
-                    // 4. JUGADORES (NUEVO TAB)
+                    // 4. JUGADORES (NOMBRE CORREGIDO)
                     let playersHtml = '<div style="text-align:center;padding:20px;color:#666">Cargando...</div>';
-                    if(detailed.boxscore && detailed.boxscore.players) {
+                    if(detailed.boxscore?.players) {
                         playersHtml = `<div class="pst-team-toggles">
                             <div id="btn-pst-${home.id}" class="pst-toggle active" onclick="app.togglePlayerTeam('${home.id}')"><img src="${homeLogo}"><span>${home.team.abbreviation}</span></div>
                             <div id="btn-pst-${away.id}" class="pst-toggle" onclick="app.togglePlayerTeam('${away.id}')"><img src="${awayLogo}"><span>${away.team.abbreviation}</span></div>
@@ -704,7 +744,7 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
                                 if(passing) {
                                     teamHtml += `<div class="pst-category-title">Pase</div><table class="pst-table"><thead><tr><th>Jugador</th><th>C/ATT</th><th>YDS</th><th>TD</th><th>INT</th></tr></thead><tbody>`;
                                     passing.athletes.forEach(ath => {
-                                        teamHtml += `<tr><td>${ath.athlete.displayName || ath.athlete.shortName || "Jugador"}</td><td>${ath.stats[0]}</td><td>${ath.stats[1]}</td><td>${ath.stats[3]}</td><td>${ath.stats[4]}</td></tr>`;
+                                        teamHtml += `<tr><td>${ath.athlete.displayName}</td><td>${ath.stats[0]}</td><td>${ath.stats[1]}</td><td>${ath.stats[3]}</td><td>${ath.stats[4]}</td></tr>`;
                                     });
                                     teamHtml += `</tbody></table>`;
                                 }
@@ -713,7 +753,7 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
                                 if(rushing) {
                                     teamHtml += `<div class="pst-category-title">Carrera</div><table class="pst-table"><thead><tr><th>Jugador</th><th>CAR</th><th>YDS</th><th>AVG</th><th>TD</th></tr></thead><tbody>`;
                                     rushing.athletes.forEach(ath => {
-                                        teamHtml += `<tr><td>${ath.athlete.displayName || ath.athlete.shortName || "Jugador"}</td><td>${ath.stats[0]}</td><td>${ath.stats[1]}</td><td>${ath.stats[2]}</td><td>${ath.stats[3]}</td></tr>`;
+                                        teamHtml += `<tr><td>${ath.athlete.displayName}</td><td>${ath.stats[0]}</td><td>${ath.stats[1]}</td><td>${ath.stats[2]}</td><td>${ath.stats[3]}</td></tr>`;
                                     });
                                     teamHtml += `</tbody></table>`;
                                 }
@@ -722,7 +762,7 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
                                 if(receiving) {
                                     teamHtml += `<div class="pst-category-title">Recepción</div><table class="pst-table"><thead><tr><th>Jugador</th><th>REC</th><th>YDS</th><th>AVG</th><th>TD</th></tr></thead><tbody>`;
                                     receiving.athletes.forEach(ath => {
-                                        teamHtml += `<tr><td>${ath.athlete.displayName || ath.athlete.shortName || "Jugador"}</td><td>${ath.stats[0]}</td><td>${ath.stats[1]}</td><td>${ath.stats[2]}</td><td>${ath.stats[3]}</td></tr>`;
+                                        teamHtml += `<tr><td>${ath.athlete.displayName}</td><td>${ath.stats[0]}</td><td>${ath.stats[1]}</td><td>${ath.stats[2]}</td><td>${ath.stats[3]}</td></tr>`;
                                     });
                                     teamHtml += `</tbody></table>`;
                                 }
@@ -741,9 +781,17 @@ const TV_RIGHTS = ["NE", "LAC", "PHI", "SF"];
                         <div class="match-modal-header">
                             <div style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">${venue}</div>
                             <div class="mm-score-board">
-                                <div style="text-align:center" class="${homeClass}"><img src="${homeLogo}" class="mm-logo-big"><div style="font-weight:900; font-size:1.5rem; margin-top:10px;">${home.team.abbreviation}</div></div>
+                                <div class="mm-team" onclick="app.openTeamRoster('${home.id}')">
+                                    <img src="${homeLogo}" class="mm-logo-big">
+                                    <div style="font-weight:900; font-size:1.5rem; margin-top:10px;">${home.team.abbreviation}</div>
+                                    <div class="${homeClass}"><i class="fa-solid fa-football-ball ball-icon"></i></div>
+                                </div>
                                 ${scoreDisplay}
-                                <div style="text-align:center" class="${awayClass}"><img src="${awayLogo}" class="mm-logo-big"><div style="font-weight:900; font-size:1.5rem; margin-top:10px;">${away.team.abbreviation}</div></div>
+                                <div class="mm-team" onclick="app.openTeamRoster('${away.id}')">
+                                    <img src="${awayLogo}" class="mm-logo-big">
+                                    <div style="font-weight:900; font-size:1.5rem; margin-top:10px;">${away.team.abbreviation}</div>
+                                    <div class="${awayClass}"><i class="fa-solid fa-football-ball ball-icon"></i></div>
+                                </div>
                             </div>
                             <div class="mm-tabs">
                                 <button id="btn-tab-resumen" class="mm-tab-btn active" onclick="app.switchTab('resumen')">Resumen</button>
