@@ -8,10 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #121212;
+            --bg: #0f0f0f;
             --surface: #1e1e1e;
             --border: #333;
-            --text-main: #e0e0e0;
+            --text-main: #ffffff;
             --text-sub: #a0a0a0;
             --accent: #00e676;
             --danger: #ff5252;
@@ -24,147 +24,172 @@
 
         /* HEADER */
         header {
-            background: rgba(18, 18, 18, 0.98); backdrop-filter: blur(10px);
-            padding: 10px 15px; position: sticky; top: 0; z-index: 100;
+            background: radial-gradient(circle at top, #2a2a2a 0%, #121212 100%);
+            padding: 15px 15px; position: sticky; top: 0; z-index: 100;
             border-bottom: 1px solid var(--border);
-            display: flex; flex-direction: column; gap: 8px;
+            display: flex; flex-direction: column; gap: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
         .header-top { display: flex; justify-content: center; align-items: center; width: 100%; position: relative; }
-        .logo { font-weight: 900; font-size: 1.1rem; letter-spacing: 1px; color: white; text-transform: uppercase; display: flex; align-items: center; gap: 8px;}
+        .logo { font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; color: white; text-transform: uppercase; display: flex; align-items: center; gap: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         
-        /* ESTADO BARRA */
         .status-bar {
-            font-size: 0.75rem; text-align: center; color: var(--text-sub);
-            background: rgba(255, 255, 255, 0.05); padding: 5px; border-radius: 4px;
-            font-weight: 700; border: 1px solid #333;
-            width: 100%; text-transform: uppercase; letter-spacing: 1px;
+            font-size: 0.7rem; text-align: center; color: #ccc;
+            background: rgba(0, 0, 0, 0.4); padding: 6px; border-radius: 50px;
+            font-weight: 700; border: 1px solid rgba(255,255,255,0.1);
+            width: fit-content; margin: 0 auto; padding-left: 15px; padding-right: 15px;
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
         /* LAYOUT */
         .container { max-width: 800px; margin: 0 auto; padding: 10px; }
-        .section { display: none; animation: fadeIn 0.3s; }
+        .section { display: none; animation: fadeIn 0.4s ease-out; }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
         /* BRACKET SYSTEM */
-        .conf-header-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .conf-header-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .conf-badge { 
-            padding: 10px; text-align: center; border-radius: 6px; 
+            padding: 12px; text-align: center; border-radius: 8px; 
             display: flex; justify-content: center; align-items: center;
             background: #1a1a1a; border: 1px solid #333;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-        .conf-logo-img { height: 40px; width: auto; object-fit: contain; }
+        .conf-logo-img { height: 45px; width: auto; object-fit: contain; }
         
-        .afc-bg { background: linear-gradient(180deg, rgba(213, 10, 10, 0.1) 0%, rgba(18,18,18,0) 100%); border-top: 2px solid #d50a0a; }
-        .nfc-bg { background: linear-gradient(180deg, rgba(1, 51, 105, 0.1) 0%, rgba(18,18,18,0) 100%); border-top: 2px solid #013369; }
+        .afc-bg { background: linear-gradient(180deg, #2b0505 0%, #1a1a1a 100%); border-top: 3px solid #d50a0a; }
+        .nfc-bg { background: linear-gradient(180deg, #021a36 0%, #1a1a1a 100%); border-top: 3px solid #013369; }
 
-        .round-wrapper { margin-bottom: 25px; }
-        .round-title { text-align: center; color: var(--text-sub); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 800; }
+        .round-wrapper { margin-bottom: 30px; }
+        .round-title { text-align: center; color: var(--text-sub); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; font-weight: 800; opacity: 0.8; }
         
-        .matches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } 
+        .matches-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } 
         
-        .match-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: flex; flex-direction: column; }
+        .match-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         
         .team-row {
-            display: flex; align-items: center; padding: 6px 8px; height: 48px;
-            border-bottom: 1px solid var(--border); cursor: default; transition: 0.2s;
+            display: flex; align-items: center; padding: 8px 10px; height: 52px;
+            border-bottom: 1px solid var(--border); cursor: default; transition: all 0.3s ease;
             user-select: none; -webkit-user-select: none;
-            opacity: 0.5; filter: grayscale(80%); /* Por defecto apagado */
+            opacity: 0.6; filter: grayscale(100%); position: relative; overflow: hidden;
         }
         .team-row:last-child { border-bottom: none; }
         
-        .team-seed { background: #333; color: #aaa; font-size: 0.65rem; font-weight: bold; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 4px; margin-right: 6px; flex-shrink: 0;}
-        .team-logo { width: 24px; height: 24px; object-fit: contain; margin-right: 6px; flex-shrink: 0; }
-        .team-name { font-size: 0.8rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .team-seed { background: #333; color: #aaa; font-size: 0.7rem; font-weight: bold; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 4px; margin-right: 10px; flex-shrink: 0;}
+        .team-logo { width: 28px; height: 28px; object-fit: contain; margin-right: 10px; flex-shrink: 0; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+        .team-name { font-size: 0.9rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 2; }
 
-        /* --- LOGICA DE COLORES --- */
-        
-        /* Cuando es el PICK del usuario (en modal) */
-        .team-row.user-pick { 
-            background: rgba(255, 255, 255, 0.08); 
-            border-left: 3px solid #777; 
-            opacity: 1; 
-            filter: grayscale(0%);
+        .team-row.active-team {
+            opacity: 1; filter: grayscale(0%);
+            background: linear-gradient(90deg, var(--team-color-alpha) 0%, rgba(30,30,30,0) 100%);
+            border-left: 4px solid var(--team-color);
         }
-
-        /* Cuando es el GANADOR REAL (en bracket oficial o modal) */
-        .team-row.winner-real { 
-            background: linear-gradient(90deg, rgba(0, 230, 118, 0.1) 0%, rgba(0,0,0,0) 100%);
-            border-left: 3px solid var(--accent);
-            opacity: 1;
-            filter: grayscale(0%);
-        }
-        .team-row.winner-real .team-name { color: var(--accent); font-weight: 800; }
-        .team-row.winner-real .team-seed { background: var(--accent); color: black; }
-        
-        /* Checkmark solo en resultados oficiales o modo admin */
-        .team-row.winner-real.official-view::after {
-            content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            margin-left: auto; color: var(--accent); font-size: 0.8rem;
-        }
-
-        /* ACIERTO: Pick del usuario + Ganador Real */
-        .team-row.user-pick.winner-real {
-            background: linear-gradient(90deg, rgba(0, 230, 118, 0.25) 0%, rgba(0,0,0,0) 100%);
-            border-left: 3px solid var(--accent);
-        }
-        .team-row.user-pick.winner-real::after {
-            content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            margin-left: auto; color: var(--accent); font-size: 0.8rem;
-        }
-
-        /* FALLO: Pick del usuario + Eliminado en la realidad */
-        .team-row.user-pick.eliminated {
+        .team-row.active-team .team-name { color: white; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        .team-row.active-team .team-seed { background: var(--team-color); color: white; }
+        .status-icon { margin-left: auto; font-size: 0.9rem; z-index: 2; }
+        .icon-check { color: var(--accent); filter: drop-shadow(0 0 5px rgba(0,230,118,0.4)); }
+        .icon-cross { color: var(--danger); opacity: 0.7; }
+        .team-row.eliminated {
             border-left: 3px solid var(--danger);
-            background: rgba(255, 82, 82, 0.1);
-            opacity: 0.8;
+            background: rgba(255, 82, 82, 0.05);
+            opacity: 0.7; filter: grayscale(50%);
         }
-        .team-row.user-pick.eliminated .team-name { color: var(--danger); text-decoration: line-through; }
-        .team-row.user-pick.eliminated::after {
-            content: '\f00d'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            margin-left: auto; color: var(--danger); font-size: 0.8rem;
-        }
+        .team-row.eliminated .team-name { color: var(--danger); text-decoration: line-through; }
 
-        .ph-box { padding: 10px; text-align: center; color: #444; font-size: 0.65rem; border: 1px dashed #333; border-radius: 6px; margin-bottom: 5px; }
+        .ph-box { padding: 15px; text-align: center; color: #555; font-size: 0.7rem; border: 1px dashed #444; border-radius: 8px; margin-bottom: 5px; background: rgba(0,0,0,0.2); }
 
-        /* SUPER BOWL */
         .sb-grid { display: flex; justify-content: center; margin-top: 10px; }
-        .sb-card { width: 100%; max-width: 320px; border: 2px solid #555; }
-        .sb-card .winner-real { background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 0%, rgba(0,0,0,0) 100%); border-left-color: var(--gold); }
-        .sb-card .winner-real .team-name { color: var(--gold); }
+        .sb-card { width: 100%; max-width: 340px; border: 2px solid #444; box-shadow: 0 0 20px rgba(0,0,0,0.3); }
         
         /* RANKING */
-        .rank-row { background: var(--surface); padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #2a2a2a; transition: background 0.2s; }
-        .rank-row:active { background: #333; }
-        .rank-info { display: flex; align-items: center; gap: 12px; }
-        .rank-pos { font-weight: 900; color: #555; width: 25px; font-size: 0.9rem; }
-        .rank-name { font-weight: 700; color: white; font-size: 0.95rem; }
-        .rank-champ-preview { width: 24px; height: 24px; border-radius: 50%; object-fit: contain; background: #333; padding: 2px; }
-        .rank-pts { background: #333; padding: 4px 10px; border-radius: 4px; font-weight: 800; font-size: 0.85rem; color: var(--accent); }
+        .rank-row { 
+            background: var(--surface); padding: 12px 15px; margin-bottom: 10px; border-radius: 10px; 
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer; 
+            border: 1px solid #2a2a2a; transition: transform 0.2s, background 0.2s; 
+        }
+        .rank-row:active { transform: scale(0.98); background: #252525; }
+        .rank-info { display: flex; align-items: center; gap: 15px; flex: 1; }
+        .rank-pos { font-weight: 900; color: #555; width: 25px; font-size: 1rem; }
+        .rank-details { display: flex; flex-direction: column; width: 100%; }
+        .rank-name { font-weight: 700; color: white; font-size: 1rem; margin-bottom: 4px; }
+        .progress-bg { width: 100%; max-width: 120px; height: 4px; background: #333; border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+        .rank-sub { font-size: 0.65rem; color: #888; margin-top: 3px; }
+        .rank-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+        .rank-pts { background: #333; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 0.9rem; color: var(--accent); border: 1px solid #444; }
+        .rank-champ-preview { width: 26px; height: 26px; border-radius: 50%; object-fit: contain; background: #222; padding: 3px; border: 1px solid #444; }
+
+        /* --- NUEVO: ESTILOS DE LÍDERES CON FOTOS --- */
+        .leaders-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 30px; }
+        
+        .leader-card {
+            background: var(--surface); border-radius: 8px; border: 1px solid #333;
+            overflow: hidden; position: relative; text-align: center;
+        }
+        .leader-bg {
+            height: 60px; background: linear-gradient(180deg, var(--team-c) 0%, #1e1e1e 100%);
+            opacity: 0.8;
+        }
+        .leader-img {
+            width: 70px; height: 70px; object-fit: cover; object-position: top;
+            border-radius: 50%; border: 3px solid #1e1e1e; background: #333;
+            margin-top: -35px; position: relative; z-index: 2;
+        }
+        .leader-info { padding: 8px; }
+        .leader-name { font-size: 0.8rem; font-weight: 800; color: white; line-height: 1.2; margin-bottom: 4px; }
+        .leader-team { font-size: 0.65rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .leader-stat { 
+            background: #121212; border: 1px solid #333; border-radius: 4px; 
+            padding: 6px; display: flex; flex-direction: column; 
+        }
+        .stat-num { font-size: 1rem; font-weight: 900; color: var(--accent); }
+        .stat-lbl { font-size: 0.6rem; color: #777; text-transform: uppercase; }
+
+        /* NOTICIAS */
+        .news-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 15px; margin-bottom: 12px;
+            transition: 0.2s; cursor: pointer; display: block; text-decoration: none;
+            position: relative; overflow: hidden; padding-left: 20px;
+        }
+        .news-card[data-type="PARTIDO"] { border-left: 4px solid var(--gold); }
+        .news-card[data-type="NOTICIA"] { border-left: 4px solid #444; }
+        
+        .news-tag {
+            font-size: 0.6rem; font-weight: 900; text-transform: uppercase; 
+            padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block;
+        }
+        .news-card[data-type="PARTIDO"] .news-tag { background: rgba(255, 215, 0, 0.2); color: var(--gold); }
+        .news-card[data-type="NOTICIA"] .news-tag { background: rgba(255, 255, 255, 0.1); color: #aaa; }
+
+        .news-title { color: white; font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; line-height: 1.4; }
+        .news-meta { color: #777; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
 
         /* NAV */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: rgba(0,0,0,0.95); backdrop-filter: blur(5px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; }
-        .nav-item { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 6px; width: 33%; height: 100%; justify-content: center; transition: 0.2s;}
-        .nav-item i { font-size: 1.2rem; margin-bottom: 2px; }
-        .nav-item.active { color: var(--accent); }
-        .nav-item.active i { transform: scale(1.1); }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; }
+        .nav-item { background: none; border: none; color: #666; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; gap: 6px; width: 25%; height: 100%; justify-content: center; transition: 0.2s;}
+        .nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
+        .nav-item.active { color: white; }
+        .nav-item.active i { transform: scale(1.1); color: var(--accent); text-shadow: 0 0 10px rgba(0,230,118,0.5); }
 
         /* MODALES */
-        .btn-full { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 800; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,230,118,0.3); }
-        .login-input { background: #333; border: 1px solid #555; padding: 12px; border-radius: 8px; color: white; width: 100%; margin-bottom: 20px; text-align: center; font-size: 1rem; }
+        .btn-full { background: var(--accent); color: black; border: none; padding: 14px; border-radius: 8px; width: 100%; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,230,118,0.2); }
+        .login-input { background: #333; border: 1px solid #555; padding: 14px; border-radius: 8px; color: white; width: 100%; margin-bottom: 20px; text-align: center; font-size: 1rem; outline: none; }
 
         .full-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: none; overflow-y: auto; }
-        .modal-nav-bar { position: sticky; top: 0; left: 0; width: 100%; height: 60px; background: #000; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 50; }
-        .modal-back-btn { background: none; border: none; color: var(--accent); font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 8px; }
-        .modal-title-text { font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
+        .modal-nav-bar { position: sticky; top: 0; left: 0; width: 100%; height: 60px; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 50; }
+        .modal-back-btn { background: none; border: none; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 8px; }
+        .modal-title-text { font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 1rem; }
         
         @media (max-width: 480px) {
-            .team-name { font-size: 0.75rem; }
-            .team-logo { width: 22px; height: 22px; }
-            .team-row { padding: 4px 6px; height: 42px; }
-            .matches-grid { gap: 6px; }
-            .team-seed { width: 18px; height: 18px; font-size: 0.6rem; }
-            .container { padding: 8px; }
+            .team-name { font-size: 0.8rem; }
+            .team-row { padding: 6px 8px; height: 46px; }
+            .container { padding: 12px; }
+            .leaders-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+            .leader-img { width: 50px; height: 50px; margin-top: -25px; }
+            .leader-bg { height: 40px; }
+            .leader-name { font-size: 0.7rem; }
+            .stat-num { font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -182,36 +207,79 @@
     <div class="container">
         
         <div id="tab-ranking" class="section active">
-            <h4 style="text-align:center; color:#666; margin: 20px 0; text-transform: uppercase; letter-spacing: 1px;">Clasificación</h4>
+            <h4 style="text-align:center; color:#666; margin: 25px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Clasificación Global</h4>
             <div id="rankingList"></div>
         </div>
 
         <div id="tab-results" class="section">
-            <div style="text-align:center; padding:10px; margin-bottom:15px; color: var(--gold); font-size: 0.8rem; border:1px solid #333; border-radius:6px; background:#1a1a1a;">
-                RESULTADOS REALES ACTUALIZADOS
+            <div style="text-align:center; padding:12px; margin-bottom:20px; color: var(--gold); font-size: 0.8rem; border:1px solid rgba(255, 215, 0, 0.3); border-radius:8px; background:rgba(255, 215, 0, 0.05); font-weight: 600;">
+                <i class="fa-solid fa-circle-check"></i> RESULTADOS OFICIALES
             </div>
-
             <div class="conf-header-row">
-                <div class="conf-badge afc-bg">
-                    <img src="https://a.espncdn.com/i/teamlogos/nfl/500/afc.png" class="conf-logo-img" alt="AFC">
-                </div>
-                <div class="conf-badge nfc-bg">
-                    <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png" class="conf-logo-img" alt="NFC">
-                </div>
+                <div class="conf-badge afc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/afc.png" class="conf-logo-img"></div>
+                <div class="conf-badge nfc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png" class="conf-logo-img"></div>
             </div>
-            
             <div id="officialBracket"></div>
         </div>
 
+        <div id="tab-info" class="section">
+            
+            <h4 style="text-align:center; color:#666; margin: 20px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Líderes de la Liga</h4>
+            
+            <div class="leaders-grid">
+                <div class="leader-card" style="--team-c: #241773;">
+                    <div class="leader-bg"></div>
+                    <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3916387.png&w=350&h=254" class="leader-img">
+                    <div class="leader-info">
+                        <div class="leader-name">Lamar Jackson</div>
+                        <div class="leader-team">Ravens</div>
+                        <div class="leader-stat">
+                            <span class="stat-num">4,450</span>
+                            <span class="stat-lbl">Yardas Pase</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="leader-card" style="--team-c: #004C54;">
+                    <div class="leader-bg"></div>
+                    <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3929630.png&w=350&h=254" class="leader-img">
+                    <div class="leader-info">
+                        <div class="leader-name">Saquon Barkley</div>
+                        <div class="leader-team">Eagles</div>
+                        <div class="leader-stat">
+                            <span class="stat-num">1,890</span>
+                            <span class="stat-lbl">Yardas Carrera</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="leader-card" style="--team-c: #4F2683;">
+                    <div class="leader-bg"></div>
+                    <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4262921.png&w=350&h=254" class="leader-img">
+                    <div class="leader-info">
+                        <div class="leader-name">Justin Jefferson</div>
+                        <div class="leader-team">Vikings</div>
+                        <div class="leader-stat">
+                            <span class="stat-num">1,650</span>
+                            <span class="stat-lbl">Yardas Rec</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 style="text-align:center; color:#666; margin: 30px 0 15px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Partidos y Noticias</h4>
+            <div id="newsList">Cargando datos...</div>
+        </div>
+
         <div id="tab-admin" class="section">
-            <div style="background:#222; padding:20px; border-radius:10px; margin-bottom:20px;">
+            <div style="background:#222; padding:25px; border-radius:12px; margin-bottom:20px; border:1px solid #333;">
                 <input type="password" id="adminPass" class="login-input" placeholder="Contraseña Admin">
-                <button class="btn-full" onclick="app.adminLogin()">Gestionar Resultados</button>
+                <button class="btn-full" onclick="app.adminLogin()">Entrar</button>
             </div>
             <div id="adminPanel" style="display:none;">
                 <h4 style="text-align:center;">ACTUALIZAR RESULTADOS</h4>
                 <div id="adminBracket"></div>
-                <button class="btn-full" style="margin-top:20px; background:#e0e0e0; color:black;" onclick="app.adminSave()">PUBLICAR OFICIALES</button>
+                <button class="btn-full" style="margin-top:20px; background:#fff; color:black;" onclick="app.adminSave()">PUBLICAR OFICIALES</button>
             </div>
         </div>
     </div>
@@ -225,12 +293,12 @@
             <div style="width:50px;"></div>
         </div>
         <div class="container">
-            <div class="conf-header-row" style="margin-top:10px;">
+            <div class="conf-header-row" style="margin-top:20px;">
                 <div class="conf-badge afc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/afc.png" class="conf-logo-img"></div>
                 <div class="conf-badge nfc-bg"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png" class="conf-logo-img"></div>
             </div>
             <div id="viewModalBody"></div>
-            <div style="height: 50px;"></div>
+            <div style="height: 80px;"></div>
         </div>
     </div>
 
@@ -240,11 +308,15 @@
             <span>Ranking</span>
         </button>
         <button class="nav-item" onclick="app.nav('results')">
-            <i class="fa-solid fa-calendar-check"></i>
+            <i class="fa-solid fa-calendar-days"></i>
             <span>Resultados</span>
         </button>
+        <button class="nav-item" onclick="app.nav('info')">
+            <i class="fa-solid fa-chart-simple"></i>
+            <span>Info NFL</span>
+        </button>
         <button class="nav-item" onclick="app.nav('admin')">
-            <i class="fa-solid fa-user-gear"></i>
+            <i class="fa-solid fa-user-shield"></i>
             <span>Admin</span>
         </button>
     </nav>
@@ -264,20 +336,20 @@
         }));
 
         const TEAMS = {
-            "Broncos": { s:1, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png" },
-            "Patriots": { s:2, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" },
-            "Jaguars": { s:3, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" },
-            "Steelers": { s:4, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" },
-            "Texans": { s:5, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" },
-            "Bills": { s:6, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" },
-            "Chargers": { s:7, c:"A", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png" },
-            "Seahawks": { s:1, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" },
-            "Bears": { s:2, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" },
-            "Eagles": { s:3, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" },
-            "Panthers": { s:4, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png" },
-            "Rams": { s:5, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" },
-            "49ers": { s:6, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" },
-            "Packers": { s:7, c:"N", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" }
+            "Broncos": { s:1, c:"A", color:"#FB4F14", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png" },
+            "Patriots": { s:2, c:"A", color:"#002244", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" },
+            "Jaguars": { s:3, c:"A", color:"#006778", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" },
+            "Steelers": { s:4, c:"A", color:"#FFB612", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" },
+            "Texans": { s:5, c:"A", color:"#03202F", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" },
+            "Bills": { s:6, c:"A", color:"#00338D", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" },
+            "Chargers": { s:7, c:"A", color:"#0080C6", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png" },
+            "Seahawks": { s:1, c:"N", color:"#69BE28", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" },
+            "Bears": { s:2, c:"N", color:"#C83803", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" },
+            "Eagles": { s:3, c:"N", color:"#004C54", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" },
+            "Panthers": { s:4, c:"N", color:"#0085CA", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png" },
+            "Rams": { s:5, c:"N", color:"#003594", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" },
+            "49ers": { s:6, c:"N", color:"#AA0000", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" },
+            "Packers": { s:7, c:"N", color:"#203731", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" }
         };
 
         const WC_MATCHES = [
@@ -306,6 +378,49 @@
                 document.getElementById('tab-'+id).classList.add('active');
                 document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
                 event.currentTarget.classList.add('active');
+                if(id === 'info') app.loadNews();
+            },
+
+            // CARGA RSS CON FILTRO DE PARTIDOS
+            loadNews: async () => {
+                const cont = document.getElementById('newsList');
+                if(cont.innerHTML.includes('news-card')) return; 
+                cont.innerHTML = '<div style="text-align:center;padding:30px;color:#666"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem; margin-bottom:10px;"></i><br>Cargando datos en español...</div>';
+                
+                try {
+                    const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.espn.com.mx/espn/rss/nfl/news');
+                    const data = await res.json();
+                    
+                    if(data.status === 'ok') {
+                        cont.innerHTML = '';
+                        data.items.slice(0, 10).forEach(item => {
+                            const date = new Date(item.pubDate).toLocaleDateString('es-ES', {day:'numeric', month:'short'});
+                            const title = item.title.toLowerCase();
+                            
+                            // Logica simple para detectar si es noticia de partido
+                            let type = 'NOTICIA';
+                            if(title.includes('vs') || title.includes('gana') || title.includes('vence') || title.includes('marcador') || title.includes('resumen')) {
+                                type = 'PARTIDO';
+                            }
+
+                            cont.innerHTML += `
+                                <a href="${item.link}" target="_blank" class="news-card" data-type="${type}">
+                                    <span class="news-tag">${type}</span>
+                                    <div class="news-title">${item.title}</div>
+                                    <div class="news-meta">
+                                        <span class="news-source">ESPN DEPORTES</span>
+                                        <span>${date}</span>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                    } else {
+                        cont.innerHTML = '<div style="text-align:center;padding:20px;">Sin conexión.</div>';
+                    }
+                } catch(e) {
+                    console.error(e);
+                    cont.innerHTML = '<div style="text-align:center;padding:20px;">Error al cargar datos.</div>';
+                }
             },
 
             calcTree: (picksSource) => {
@@ -381,25 +496,38 @@
                                 const dat = TEAMS[tm];
                                 const userSelected = src[m.id] === tm;
                                 const isRealWinner = realResults[m.id] === tm;
-                                // CORRECCION: Solo consideramos el partido finalizado si el resultado es UN EQUIPO VALIDO
                                 const matchFinished = (realResults[m.id] && TEAMS[realResults[m.id]]);
 
                                 const r = document.createElement('div');
                                 let classes = 'team-row ';
+                                let iconHtml = '';
                                 
                                 if(mode === 'read-official') {
-                                    if(userSelected) classes += 'winner-real official-view '; 
+                                    if(userSelected) { 
+                                        classes += 'active-team ';
+                                        iconHtml = '<i class="fa-solid fa-trophy status-icon icon-check"></i>';
+                                    }
                                 } else if(mode === 'read') {
-                                    if(userSelected) classes += 'user-pick ';
-                                    if(isRealWinner) classes += 'winner-real ';
-                                    if(userSelected && matchFinished && !isRealWinner) classes += 'eliminated ';
+                                    if(userSelected) {
+                                        if(matchFinished) {
+                                            if(isRealWinner) {
+                                                classes += 'active-team ';
+                                                iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>';
+                                            } else {
+                                                classes += 'eliminated ';
+                                                iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>';
+                                            }
+                                        } else { classes += 'active-team '; }
+                                    } else if(isRealWinner) { classes += 'active-team '; }
                                 } else if(mode === 'admin') {
-                                    if(userSelected) classes += 'winner-real ';
+                                    if(userSelected) classes += 'active-team ';
                                 }
                                 
                                 r.className = classes;
-                                r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>`;
-                                
+                                r.style.setProperty('--team-color', dat.color);
+                                r.style.setProperty('--team-color-alpha', dat.color + '40');
+
+                                r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>${iconHtml}`;
                                 if(canEdit) {
                                     r.onclick = () => { src[m.id]=tm; app.renderSplitBracket(contId, src, mode); };
                                     r.style.cursor = 'pointer';
@@ -412,7 +540,6 @@
                     g.appendChild(colA); g.appendChild(colN); w.appendChild(g); c.appendChild(w);
                 });
 
-                // SUPER BOWL
                 const w = document.createElement('div'); w.className='round-wrapper';
                 w.innerHTML = `<div class="round-title">Super Bowl</div>`;
                 const sg = document.createElement('div'); sg.className='sb-grid';
@@ -426,24 +553,33 @@
                         const dat = TEAMS[tm];
                         const userSelected = src.sb === tm;
                         const isRealWinner = realResults.sb === tm;
-                        // CORRECCION: Validamos también aquí contra la lista de equipos
                         const matchFinished = (realResults.sb && TEAMS[realResults.sb]);
 
                         const r = document.createElement('div');
                         let classes = 'team-row ';
-                        
+                        let iconHtml = '';
+
                         if(mode === 'read-official') {
-                            if(userSelected) classes += 'winner-real official-view '; 
+                            if(userSelected) {
+                                classes += 'active-team ';
+                                iconHtml = '<i class="fa-solid fa-star status-icon" style="color:#ffd700"></i>';
+                            }
                         } else if(mode === 'read') {
-                            if(userSelected) classes += 'user-pick ';
-                            if(isRealWinner) classes += 'winner-real ';
-                            if(userSelected && matchFinished && !isRealWinner) classes += 'eliminated ';
+                            if(userSelected) {
+                                if(matchFinished) {
+                                    if(isRealWinner) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>'; }
+                                    else { classes += 'eliminated '; iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>'; }
+                                } else { classes += 'active-team '; }
+                            } else if(isRealWinner) { classes += 'active-team '; }
                         } else if(mode === 'admin') {
-                            if(userSelected) classes += 'winner-real ';
+                            if(userSelected) classes += 'active-team ';
                         }
 
                         r.className = classes;
-                        r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>`;
+                        r.style.setProperty('--team-color', dat.color);
+                        r.style.setProperty('--team-color-alpha', dat.color + '60');
+
+                        r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>${iconHtml}`;
                         if(canEdit) {
                             r.onclick=()=>{ src.sb=tm; app.renderSplitBracket(contId, src, mode); };
                             r.style.cursor = 'pointer';
@@ -457,8 +593,8 @@
                 if(t.ch) {
                     const dat = TEAMS[t.ch];
                     const winDiv = document.createElement('div');
-                    winDiv.style.cssText = "text-align:center; margin-top:20px; border:1px solid #333; padding:20px; border-radius:10px; background: rgba(255, 215, 0, 0.05); border-color: var(--gold);";
-                    winDiv.innerHTML = `<small style="color:var(--gold); font-weight:bold;">CAMPEÓN</small><br><img src="${dat.logo}" style="width:60px; margin-top:10px;"><h2 style="margin:5px 0; color:white">${t.ch}</h2>`;
+                    winDiv.style.cssText = "text-align:center; margin-top:20px; border:1px solid #333; padding:20px; border-radius:12px; background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(255, 215, 0, 0.1)); border-color: var(--gold); box-shadow:0 10px 30px rgba(0,0,0,0.5);";
+                    winDiv.innerHTML = `<small style="color:var(--gold); font-weight:bold; letter-spacing:2px;">CAMPEÓN SUPER BOWL</small><br><img src="${dat.logo}" style="width:70px; margin-top:15px; filter:drop-shadow(0 0 10px ${dat.color})"><h2 style="margin:10px 0 0 0; color:white; font-size:1.5rem;">${t.ch}</h2>`;
                     c.appendChild(winDiv);
                 }
             },
@@ -476,17 +612,24 @@
 
             renderRank: () => {
                 const l = document.getElementById('rankingList');
-                if(!state.db.users) { l.innerHTML="<div style='text-align:center;color:#555'>Cargando datos...</div>"; return; }
+                if(!state.db.users) { l.innerHTML="<div style='text-align:center;color:#555;margin-top:20px;'>Cargando datos...</div>"; return; }
                 const real = state.db.results || {};
                 const scores = [];
                 const rt = app.calcTree(real);
 
+                let totalPlayed = 0;
+                WC_MATCHES.forEach(m => { if(real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
+                rt.div.forEach(m => { if(!m.ph && real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
+                rt.conf.forEach(m => { if(!m.ph && real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
+                if(rt.ch && TEAMS[rt.ch]) totalPlayed++;
+
                 Object.keys(state.db.users).forEach(u => {
                     const p = state.db.users[u].picks || {};
                     let pts = 0;
+                    let hits = 0;
                     const ut = app.calcTree(p);
 
-                    WC_MATCHES.forEach(m => { if(real[m.id] && p[m.id] === real[m.id]) pts += 2; });
+                    WC_MATCHES.forEach(m => { if(real[m.id] && p[m.id] === real[m.id]) { pts += 2; hits++; } });
                     const checkMatchup = (rM, uM) => {
                         if(!rM || !uM || rM.ph || uM.ph) return false;
                         const rT = [rM.h, rM.a].sort().join('-'); const uT = [uM.h, uM.a].sort().join('-');
@@ -495,38 +638,45 @@
                     rt.div.forEach(rM => {
                         const uM = ut.div.find(m => m.id === rM.id);
                         if(checkMatchup(rM, uM)) pts += 1;
-                        if(real[rM.id] && p[rM.id] === real[rM.id]) pts += 3;
+                        if(real[rM.id] && p[rM.id] === real[rM.id]) { pts += 3; hits++; }
                     });
                     rt.conf.forEach(rM => {
                         const uM = ut.conf.find(m => m.id === rM.id);
                         if(checkMatchup(rM, uM)) pts += 1;
-                        if(real[rM.id] && p[rM.id] === real[rM.id]) pts += 4;
+                        if(real[rM.id] && p[rM.id] === real[rM.id]) { pts += 4; hits++; }
                     });
                     const rSB = rt.sb; const uSB = ut.sb;
                     if(checkMatchup(rSB, uSB)) pts += 1;
-                    if(rt.ch && ut.ch === rt.ch) pts += 5;
+                    if(rt.ch && ut.ch === rt.ch) { pts += 5; hits++; }
 
-                    scores.push({name:u, pts, winner: ut.ch});
+                    scores.push({name:u, pts, winner: ut.ch, hits});
                 });
                 scores.sort((a,b) => b.pts - a.pts);
                 
                 l.innerHTML='';
                 scores.forEach((s,i)=>{
                     const d=document.createElement('div'); d.className='rank-row';
-                    let champHtml = s.winner && TEAMS[s.winner] ? `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview">` : `<div class="rank-champ-preview" style="background:transparent"></div>`;
-                    
+                    let champHtml = s.winner && TEAMS[s.winner] ? `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview">` : `<div class="rank-champ-preview" style="background:transparent; border:1px dashed #444;"></div>`;
                     let posColor = '#555';
                     if(i===0) posColor = 'var(--gold)';
                     if(i===1) posColor = '#c0c0c0';
                     if(i===2) posColor = '#cd7f32';
 
+                    let percent = totalPlayed > 0 ? (s.hits / totalPlayed) * 100 : 0;
+
                     d.innerHTML=`
                         <div class="rank-info">
                             <span class="rank-pos" style="color:${posColor}">#${i+1}</span>
-                            <span class="rank-name">${s.name}</span>
+                            <div class="rank-details">
+                                <span class="rank-name">${s.name}</span>
+                                <div class="progress-bg"><div class="progress-fill" style="width:${percent}%"></div></div>
+                                <span class="rank-sub">${s.hits}/${totalPlayed} Aciertos</span>
+                            </div>
+                        </div>
+                        <div class="rank-right">
+                            <span class="rank-pts">${s.pts} pts</span>
                             ${champHtml}
                         </div>
-                        <span class="rank-pts">${s.pts} pts</span>
                     `;
                     d.onclick = () => {
                         document.getElementById('viewModal').style.display='block';
