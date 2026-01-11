@@ -108,7 +108,7 @@
         .rank-pts { background: #333; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 0.9rem; color: var(--accent); border: 1px solid #444; }
         .rank-champ-preview { width: 26px; height: 26px; border-radius: 50%; object-fit: contain; background: #222; padding: 3px; border: 1px solid #444; }
 
-        /* LIDERES CON FOTOS (CARD) */
+        /* LIDERES CON FOTOS (CARD) - SEASON */
         .leaders-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 30px; }
         .leader-card { background: var(--surface); border-radius: 8px; border: 1px solid #333; overflow: hidden; position: relative; text-align: center; }
         .leader-bg { height: 60px; background: linear-gradient(180deg, var(--team-c) 0%, #1e1e1e 100%); opacity: 0.8; }
@@ -175,14 +175,6 @@
         .sc-fill-home { height: 100%; background: var(--team-a-color); }
         .sc-fill-away { height: 100%; background: var(--team-b-color); }
         
-        /* LIDERES EN MODAL */
-        .game-leaders { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 15px 20px 15px; }
-        .gl-box { background: #222; border-radius: 6px; padding: 10px; display: flex; gap: 10px; align-items: center; border: 1px solid #333; }
-        .gl-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: top; background: #333; }
-        .gl-info { display: flex; flex-direction: column; overflow: hidden; }
-        .gl-name { font-size: 0.75rem; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .gl-stat { font-size: 0.7rem; color: var(--accent); }
-
         /* BARRA DE PREDICCION */
         .prediction-box { padding: 20px; border-bottom: 1px solid #333; }
         .pred-title { text-align: center; font-size: 0.7rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
@@ -217,6 +209,8 @@
         .modal-back-btn { background: none; border: none; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 8px; }
         .modal-title-text { font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 1rem; }
         
+        .section-header { padding: 25px 20px 10px 20px; color: #555; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
         @media (max-width: 480px) {
             .team-name { font-size: 0.8rem; }
             .team-row { padding: 6px 8px; height: 46px; }
@@ -420,67 +414,103 @@
                 if(id === 'news') app.loadNews();
             },
 
+            // CARGA RSS
             loadNews: async () => {
                 const cont = document.getElementById('newsList');
                 if(cont.innerHTML.includes('news-card')) return; 
                 cont.innerHTML = '<div style="text-align:center;padding:30px;color:#666"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem; margin-bottom:10px;"></i><br>Cargando datos en español...</div>';
+                
                 try {
                     const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.espn.com.mx/espn/rss/nfl/news');
                     const data = await res.json();
+                    
                     if(data.status === 'ok') {
                         cont.innerHTML = '';
                         data.items.slice(0, 10).forEach(item => {
                             const date = new Date(item.pubDate).toLocaleDateString('es-ES', {day:'numeric', month:'short'});
                             const title = item.title.toLowerCase();
                             let type = 'NOTICIA';
-                            if(title.includes('vs') || title.includes('gana') || title.includes('vence') || title.includes('marcador') || title.includes('resumen')) type = 'PARTIDO';
+                            if(title.includes('vs') || title.includes('gana') || title.includes('vence') || title.includes('marcador') || title.includes('resumen')) {
+                                type = 'PARTIDO';
+                            }
                             cont.innerHTML += `
                                 <a href="${item.link}" target="_blank" class="news-card" data-type="${type}">
                                     <span class="news-tag">${type}</span>
                                     <div class="news-title">${item.title}</div>
                                     <div class="news-meta"><span class="news-source">ESPN DEPORTES</span><span>${date}</span></div>
-                                </a>`;
+                                </a>
+                            `;
                         });
-                    } else cont.innerHTML = '<div style="text-align:center;padding:20px;">Sin conexión.</div>';
-                } catch(e) { cont.innerHTML = '<div style="text-align:center;padding:20px;">Error al cargar datos.</div>'; }
+                    } else {
+                        cont.innerHTML = '<div style="text-align:center;padding:20px;">Sin conexión.</div>';
+                    }
+                } catch(e) {
+                    cont.innerHTML = '<div style="text-align:center;padding:20px;">Error al cargar datos.</div>';
+                }
             },
 
             loadLiveGames: async () => {
                 const c = document.getElementById('liveGamesList');
                 c.innerHTML = '<div class="ph-box"><i class="fa-solid fa-sync fa-spin"></i> Conectando con ESPN...</div>';
+                
                 try {
                     const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard');
                     const data = await res.json();
                     state.liveData = data.events || [];
-                    if(state.liveData.length === 0) { c.innerHTML = '<div class="ph-box">No hay partidos programados para hoy.</div>'; return; }
+
+                    if(state.liveData.length === 0) {
+                        c.innerHTML = '<div class="ph-box">No hay partidos programados para hoy.</div>';
+                        return;
+                    }
+
                     c.innerHTML = '';
                     state.liveData.forEach((evt, idx) => {
                         const comp = evt.competitions[0];
                         const team1 = comp.competitors[1]; // Home
                         const team2 = comp.competitors[0]; // Away
-                        const status = evt.status.type.state;
+                        const status = evt.status.type.state; // pre, in, post
                         const statusDetail = evt.status.type.detail;
                         const score1 = team1.score;
                         const score2 = team2.score;
-                        let statusClass = status === 'in' ? 'in-progress' : '';
+
+                        let statusClass = '';
+                        if(status === 'in') statusClass = 'in-progress';
+
+                        // Traducir estados simples
                         let statusText = statusDetail.replace('Final', 'FINAL').replace('OT', 'PRÓRROGA');
                         if(status === 'pre') {
                             const d = new Date(evt.date);
                             statusText = d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
                         }
+
                         const card = document.createElement('div');
                         card.className = 'live-card';
                         card.onclick = () => app.openMatchModal(idx);
                         card.innerHTML = `
-                            <div class="live-header"><span>${evt.name}</span><span class="live-status ${statusClass}">${statusText}</span></div>
+                            <div class="live-header">
+                                <span>${evt.name}</span>
+                                <span class="live-status ${statusClass}">${statusText}</span>
+                            </div>
                             <div class="live-body">
-                                <div class="live-team"><img src="${team1.team.logo}" class="live-logo"><span class="live-name">${team1.team.abbreviation}</span></div>
-                                <div class="live-score-col">${status === 'pre' ? '<span class="live-vs">VS</span>' : `<span class="live-score">${score1} - ${score2}</span>`}</div>
-                                <div class="live-team"><img src="${team2.team.logo}" class="live-logo"><span class="live-name">${team2.team.abbreviation}</span></div>
-                            </div>`;
+                                <div class="live-team">
+                                    <img src="${team1.team.logo}" class="live-logo">
+                                    <span class="live-name">${team1.team.abbreviation}</span>
+                                </div>
+                                <div class="live-score-col">
+                                    ${status === 'pre' ? '<span class="live-vs">VS</span>' : `<span class="live-score">${score1} - ${score2}</span>`}
+                                </div>
+                                <div class="live-team">
+                                    <img src="${team2.team.logo}" class="live-logo">
+                                    <span class="live-name">${team2.team.abbreviation}</span>
+                                </div>
+                            </div>
+                        `;
                         c.appendChild(card);
                     });
-                } catch(e) { c.innerHTML = '<div class="ph-box">Error cargando partidos.</div>'; }
+
+                } catch(e) {
+                    c.innerHTML = '<div class="ph-box">Error cargando partidos.</div>';
+                }
             },
 
             openMatchModal: async (idx) => {
@@ -488,19 +518,22 @@
                 const gameId = evt.id;
                 const modal = document.getElementById('matchModal');
                 const content = document.getElementById('matchModalContent');
+                
                 content.innerHTML = '<div style="text-align:center;padding:50px;color:#888;"><i class="fa-solid fa-football fa-spin"></i><br>Obteniendo jugadas...</div>';
                 modal.style.display = 'block';
 
                 try {
+                    // LLAMADA DETALLADA PARA JUGADAS
                     const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${gameId}`);
                     const detailed = await res.json();
+                    
                     const comp = detailed.header.competitions[0];
                     const home = comp.competitors[1];
                     const away = comp.competitors[0];
                     const venue = detailed.gameInfo ? detailed.gameInfo.venue.fullName : 'Estadio';
                     const statusState = detailed.header.competitions[0].status.type.state; // 'pre', 'in', 'post'
                     
-                    // FIX UNDEFINED SCORE
+                    // FIX UNDEFINED SCORE: SI ES 'PRE', NO MOSTRAR 0-0 SINO VS o HORA
                     let scoreDisplay = "";
                     let timeStr = "";
                     if(statusState === 'pre') {
@@ -511,7 +544,7 @@
                         scoreDisplay = `<div class="mm-score">${home.score || 0} - ${away.score || 0}</div>`;
                     }
 
-                    // FIX LOGOS
+                    // FIX LOGOS: BUSCAR EN ARRAY DE LOGOS O FALLBACK
                     const getLogo = (t) => (t.team.logos && t.team.logos[0] && t.team.logos[0].href) || t.team.logo || 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png';
                     const homeLogo = getLogo(home);
                     const awayLogo = getLogo(away);
@@ -531,6 +564,7 @@
                     let bottomContent = '';
 
                     if(statusState === 'pre') {
+                        // SI ES PREVIA: Solo mostrar hora y ocultar lideres/anotaciones
                         bottomContent = `
                             <div style="text-align:center; padding:30px; color:#666;">
                                 <i class="fa-regular fa-clock" style="font-size:2rem; margin-bottom:10px;"></i>
@@ -587,6 +621,7 @@
                             teamStatsHtml += '</div>';
                         }
 
+                        // SI ESTA EN JUEGO O FINALIZADO: Mostrar todo
                         let scoringHtml = '';
                         if(detailed.scoringPlays && detailed.scoringPlays.length > 0) {
                             detailed.scoringPlays.forEach(play => {
@@ -596,6 +631,7 @@
                                 if(typeText.includes('Touchdown')) { badgeClass = 'tag-td'; badgeLabel = 'TOUCHDOWN'; }
                                 else if(typeText.includes('Field Goal')) { badgeClass = 'tag-fg'; badgeLabel = 'GOL DE CAMPO'; }
                                 else if(typeText.includes('Safety')) { badgeClass = 'tag-sf'; badgeLabel = 'SAFETY'; }
+                                
                                 scoringHtml += `
                                     <div class="scoring-item">
                                         <img src="${teamLogo}" class="si-logo">
@@ -609,28 +645,10 @@
                             });
                         } else { scoringHtml = '<div style="text-align:center;color:#666;padding:20px;">Sin anotaciones aún.</div>'; }
 
-                        let leadersHtml = '';
-                        if(detailed.leaders) {
-                            const leadersArr = Array.isArray(detailed.leaders) ? detailed.leaders : [];
-                            leadersArr.forEach(cat => {
-                                if (cat.leaders && cat.leaders.length > 0) {
-                                    const l = cat.leaders[0];
-                                    if(l && l.athlete) {
-                                        const img = l.athlete.headshot || "https://a.espncdn.com/i/headshots/nfl/players/full/default.png";
-                                        const name = l.athlete.shortName || l.athlete.displayName || "Jugador";
-                                        leadersHtml += `<div class="gl-box"><img src="${img}" class="gl-img"><div class="gl-info"><span class="gl-name">${name}</span><span class="gl-stat">${l.displayValue} (${cat.displayName})</span></div></div>`;
-                                    }
-                                }
-                            });
-                        }
-                        if(leadersHtml === '') leadersHtml = '<div style="text-align:center;color:#666; font-size:0.8rem; width:100%">Estadísticas disponibles al inicio.</div>';
-
                         bottomContent = `
-                            <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Estadísticas de Equipo</h4>
+                            <div class="section-header">Estadísticas de Equipo</div>
                             ${teamStatsHtml}
-                            <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Líderes del Partido</h4>
-                            <div class="game-leaders">${leadersHtml}</div>
-                            <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Anotaciones (Minuto a Minuto)</h4>
+                            <div class="section-header">Anotaciones</div>
                             <div class="scoring-list">${scoringHtml}</div>
                         `;
                     }
@@ -674,29 +692,43 @@
                 const p = picksSource || {};
                 let wc = {A:[], N:[]};
                 WC_MATCHES.forEach(m => { if(p[m.id]) wc[TEAMS[p[m.id]].c].push(p[m.id]); });
+
                 let div = [];
                 ['A', 'N'].forEach(c => {
                     if(wc[c].length === 3) {
                         const s1 = Object.keys(TEAMS).find(t => TEAMS[t].c === c && TEAMS[t].s === 1);
                         let pool = [s1, ...wc[c]].sort((a,b) => TEAMS[a].s - TEAMS[b].s);
-                        div.push({ id:`${c}d1`, h:pool[0], a:pool[3], c:c }); div.push({ id:`${c}d2`, h:pool[1], a:pool[2], c:c });
-                    } else { div.push({ id:`${c}d1`, ph:true, c:c }, { id:`${c}d2`, ph:true, c:c }); }
+                        div.push({ id:`${c}d1`, h:pool[0], a:pool[3], c:c });
+                        div.push({ id:`${c}d2`, h:pool[1], a:pool[2], c:c });
+                    } else {
+                        div.push({ id:`${c}d1`, ph:true, c:c }, { id:`${c}d2`, ph:true, c:c });
+                    }
                 });
+
                 let conf = [];
                 let divWinners = {A:[], N:[]};
-                div.forEach(match => { if(!match.ph && p[match.id] && (p[match.id] === match.h || p[match.id] === match.a)) divWinners[match.c].push(p[match.id]); });
+                div.forEach(match => { 
+                    if(!match.ph && p[match.id] && (p[match.id] === match.h || p[match.id] === match.a)) {
+                        divWinners[match.c].push(p[match.id]);
+                    }
+                });
                 ['A', 'N'].forEach(c => {
                     if(divWinners[c].length === 2) {
                         let sorted = divWinners[c].sort((a,b) => TEAMS[a].s - TEAMS[b].s);
                         conf.push({ id:`${c}c`, h:sorted[0], a:sorted[1], c:c });
                     } else conf.push({ id:`${c}c`, ph:true, c:c });
                 });
+
                 let sb = { id:'sb', ph:true };
-                const matchA = conf.find(m => m.c === 'A'); const matchN = conf.find(m => m.c === 'N');
+                const matchA = conf.find(m => m.c === 'A');
+                const matchN = conf.find(m => m.c === 'N');
                 const aChamp = (matchA && !matchA.ph && p[matchA.id]) ? p[matchA.id] : null;
                 const nChamp = (matchN && !matchN.ph && p[matchN.id]) ? p[matchN.id] : null;
+
                 if(aChamp && nChamp) sb = { id:'sb', h:aChamp, a:nChamp };
-                let ch = null; if(!sb.ph && p['sb']) ch = p['sb'];
+                let ch = null;
+                if(!sb.ph && p['sb']) ch = p['sb'];
+
                 return { wc: WC_MATCHES, div, conf, sb, ch };
             },
 
@@ -704,36 +736,67 @@
                 const t = app.calcTree(src);
                 const c = document.getElementById(contId); c.innerHTML = '';
                 const rounds = [{ t: 'Wild Card', d: t.wc }, { t: 'Divisional', d: t.div }, { t: 'Conference', d: t.conf }];
+                
                 const canEdit = (mode === 'admin');
                 const realResults = state.db.results || {};
+
                 rounds.forEach(rnd => {
                     const w = document.createElement('div'); w.className = 'round-wrapper';
                     w.innerHTML = `<div class="round-title">${rnd.t}</div>`;
                     const g = document.createElement('div'); g.className = 'matches-grid';
-                    const colA = document.createElement('div'); const colN = document.createElement('div');
+                    const colA = document.createElement('div');
+                    const colN = document.createElement('div');
+
                     rnd.d.forEach(m => {
-                        let isAFC = m.ph ? (m.c === 'A') : (TEAMS[m.h].c === 'A');
+                        let isAFC = false;
+                        if(m.ph) isAFC = (m.c === 'A'); else isAFC = (TEAMS[m.h].c === 'A');
                         const target = isAFC ? colA : colN;
-                        if(m.ph) { target.innerHTML += '<div class="ph-box">Por definir...</div>'; } else {
+
+                        if(m.ph) {
+                            const ph = document.createElement('div'); ph.className = 'ph-box'; ph.innerText = 'Por definir...';
+                            target.appendChild(ph);
+                        } else {
                             const card = document.createElement('div'); card.className = 'match-card';
                             [m.h, m.a].forEach(tm => {
                                 const dat = TEAMS[tm];
                                 const userSelected = src[m.id] === tm;
                                 const isRealWinner = realResults[m.id] === tm;
                                 const matchFinished = (realResults[m.id] && TEAMS[realResults[m.id]]);
+
                                 const r = document.createElement('div');
-                                let classes = 'team-row '; let iconHtml = '';
-                                if(mode === 'read-official') { if(userSelected) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-trophy status-icon icon-check"></i>'; } }
-                                else if(mode === 'read') {
+                                let classes = 'team-row ';
+                                let iconHtml = '';
+                                
+                                if(mode === 'read-official') {
+                                    if(userSelected) { 
+                                        classes += 'active-team ';
+                                        iconHtml = '<i class="fa-solid fa-trophy status-icon icon-check"></i>';
+                                    }
+                                } else if(mode === 'read') {
                                     if(userSelected) {
-                                        if(matchFinished) { if(isRealWinner) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>'; } else { classes += 'eliminated '; iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>'; } }
-                                        else { classes += 'active-team '; }
+                                        if(matchFinished) {
+                                            if(isRealWinner) {
+                                                classes += 'active-team ';
+                                                iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>';
+                                            } else {
+                                                classes += 'eliminated ';
+                                                iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>';
+                                            }
+                                        } else { classes += 'active-team '; }
                                     } else if(isRealWinner) { classes += 'active-team '; }
-                                } else if(mode === 'admin') { if(userSelected) classes += 'active-team '; }
+                                } else if(mode === 'admin') {
+                                    if(userSelected) classes += 'active-team ';
+                                }
+                                
                                 r.className = classes;
-                                r.style.setProperty('--team-color', dat.color); r.style.setProperty('--team-color-alpha', dat.color + '40');
+                                r.style.setProperty('--team-color', dat.color);
+                                r.style.setProperty('--team-color-alpha', dat.color + '40');
+
                                 r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>${iconHtml}`;
-                                if(canEdit) { r.onclick = () => { src[m.id]=tm; app.renderSplitBracket(contId, src, mode); }; r.style.cursor = 'pointer'; }
+                                if(canEdit) {
+                                    r.onclick = () => { src[m.id]=tm; app.renderSplitBracket(contId, src, mode); };
+                                    r.style.cursor = 'pointer';
+                                }
                                 card.appendChild(r);
                             });
                             target.appendChild(card);
@@ -741,32 +804,57 @@
                     });
                     g.appendChild(colA); g.appendChild(colN); w.appendChild(g); c.appendChild(w);
                 });
-                const w = document.createElement('div'); w.className='round-wrapper'; w.innerHTML = `<div class="round-title">Super Bowl</div>`;
+
+                const w = document.createElement('div'); w.className='round-wrapper';
+                w.innerHTML = `<div class="round-title">Super Bowl</div>`;
                 const sg = document.createElement('div'); sg.className='sb-grid';
-                if(t.sb.ph) { sg.innerHTML = '<div class="ph-box" style="width:100%">Por definir...</div>'; } else {
+                
+                if(t.sb.ph) {
+                    const ph = document.createElement('div'); ph.className = 'ph-box'; ph.style.width='100%'; ph.innerText = 'Por definir...';
+                    sg.appendChild(ph);
+                } else {
                     const card = document.createElement('div'); card.className='match-card sb-card';
                     [t.sb.h, t.sb.a].forEach(tm => {
                         const dat = TEAMS[tm];
                         const userSelected = src.sb === tm;
                         const isRealWinner = realResults.sb === tm;
                         const matchFinished = (realResults.sb && TEAMS[realResults.sb]);
+
                         const r = document.createElement('div');
-                        let classes = 'team-row '; let iconHtml = '';
-                        if(mode === 'read-official') { if(userSelected) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-star status-icon" style="color:#ffd700"></i>'; } }
-                        else if(mode === 'read') {
+                        let classes = 'team-row ';
+                        let iconHtml = '';
+
+                        if(mode === 'read-official') {
                             if(userSelected) {
-                                if(matchFinished) { if(isRealWinner) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>'; } else { classes += 'eliminated '; iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>'; } }
-                                else { classes += 'active-team '; }
+                                classes += 'active-team ';
+                                iconHtml = '<i class="fa-solid fa-star status-icon" style="color:#ffd700"></i>';
+                            }
+                        } else if(mode === 'read') {
+                            if(userSelected) {
+                                if(matchFinished) {
+                                    if(isRealWinner) { classes += 'active-team '; iconHtml = '<i class="fa-solid fa-check status-icon icon-check"></i>'; }
+                                    else { classes += 'eliminated '; iconHtml = '<i class="fa-solid fa-xmark status-icon icon-cross"></i>'; }
+                                } else { classes += 'active-team '; }
                             } else if(isRealWinner) { classes += 'active-team '; }
-                        } else if(mode === 'admin') { if(userSelected) classes += 'active-team '; }
-                        r.className = classes; r.style.setProperty('--team-color', dat.color); r.style.setProperty('--team-color-alpha', dat.color + '60');
+                        } else if(mode === 'admin') {
+                            if(userSelected) classes += 'active-team ';
+                        }
+
+                        r.className = classes;
+                        r.style.setProperty('--team-color', dat.color);
+                        r.style.setProperty('--team-color-alpha', dat.color + '60');
+
                         r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>${iconHtml}`;
-                        if(canEdit) { r.onclick=()=>{ src.sb=tm; app.renderSplitBracket(contId, src, mode); }; r.style.cursor = 'pointer'; }
+                        if(canEdit) {
+                            r.onclick=()=>{ src.sb=tm; app.renderSplitBracket(contId, src, mode); };
+                            r.style.cursor = 'pointer';
+                        }
                         card.appendChild(r);
                     });
                     sg.appendChild(card);
                 }
                 w.appendChild(sg); c.appendChild(w);
+
                 if(t.ch) {
                     const dat = TEAMS[t.ch];
                     const winDiv = document.createElement('div');
@@ -776,8 +864,16 @@
                 }
             },
 
-            adminLogin:()=>{ if(document.getElementById('adminPass').value==='123Marcos') { document.getElementById('adminPanel').style.display='block'; state.admin = state.db.results || {}; app.renderSplitBracket('adminBracket', state.admin, 'admin'); } },
-            adminSave:()=>{ if(confirm("¿Publicar Resultados Oficiales?")) set(ref(db,'results'), state.admin); },
+            adminLogin:()=>{
+                if(document.getElementById('adminPass').value==='123Marcos') {
+                    document.getElementById('adminPanel').style.display='block';
+                    state.admin = state.db.results || {};
+                    app.renderSplitBracket('adminBracket', state.admin, 'admin');
+                }
+            },
+            adminSave:()=>{
+                if(confirm("¿Publicar Resultados Oficiales?")) set(ref(db,'results'), state.admin);
+            },
 
             renderRank: () => {
                 const l = document.getElementById('rankingList');
@@ -785,15 +881,19 @@
                 const real = state.db.results || {};
                 const scores = [];
                 const rt = app.calcTree(real);
+
                 let totalPlayed = 0;
                 WC_MATCHES.forEach(m => { if(real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
                 rt.div.forEach(m => { if(!m.ph && real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
                 rt.conf.forEach(m => { if(!m.ph && real[m.id] && TEAMS[real[m.id]]) totalPlayed++; });
                 if(rt.ch && TEAMS[rt.ch]) totalPlayed++;
+
                 Object.keys(state.db.users).forEach(u => {
                     const p = state.db.users[u].picks || {};
-                    let pts = 0; let hits = 0;
+                    let pts = 0;
+                    let hits = 0;
                     const ut = app.calcTree(p);
+
                     WC_MATCHES.forEach(m => { if(real[m.id] && p[m.id] === real[m.id]) { pts += 2; hits++; } });
                     const checkMatchup = (rM, uM) => {
                         if(!rM || !uM || rM.ph || uM.ph) return false;
@@ -813,18 +913,41 @@
                     const rSB = rt.sb; const uSB = ut.sb;
                     if(checkMatchup(rSB, uSB)) pts += 1;
                     if(rt.ch && ut.ch === rt.ch) { pts += 5; hits++; }
+
                     scores.push({name:u, pts, winner: ut.ch, hits});
                 });
                 scores.sort((a,b) => b.pts - a.pts);
+                
                 l.innerHTML='';
                 scores.forEach((s,i)=>{
                     const d=document.createElement('div'); d.className='rank-row';
                     let champHtml = s.winner && TEAMS[s.winner] ? `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview">` : `<div class="rank-champ-preview" style="background:transparent; border:1px dashed #444;"></div>`;
                     let posColor = '#555';
-                    if(i===0) posColor = 'var(--gold)'; if(i===1) posColor = '#c0c0c0'; if(i===2) posColor = '#cd7f32';
+                    if(i===0) posColor = 'var(--gold)';
+                    if(i===1) posColor = '#c0c0c0';
+                    if(i===2) posColor = '#cd7f32';
+
                     let percent = totalPlayed > 0 ? (s.hits / totalPlayed) * 100 : 0;
-                    d.innerHTML=`<div class="rank-info"><span class="rank-pos" style="color:${posColor}">#${i+1}</span><div class="rank-details"><span class="rank-name">${s.name}</span><div class="progress-bg"><div class="progress-fill" style="width:${percent}%"></div></div><span class="rank-sub">${s.hits}/${totalPlayed} Aciertos</span></div></div><div class="rank-right"><span class="rank-pts">${s.pts} pts</span>${champHtml}</div>`;
-                    d.onclick = () => { document.getElementById('viewModal').style.display='block'; document.getElementById('viewModalTitle').innerText = s.name; app.renderSplitBracket('viewModalBody', state.db.users[s.name].picks || {}, 'read'); };
+
+                    d.innerHTML=`
+                        <div class="rank-info">
+                            <span class="rank-pos" style="color:${posColor}">#${i+1}</span>
+                            <div class="rank-details">
+                                <span class="rank-name">${s.name}</span>
+                                <div class="progress-bg"><div class="progress-fill" style="width:${percent}%"></div></div>
+                                <span class="rank-sub">${s.hits}/${totalPlayed} Aciertos</span>
+                            </div>
+                        </div>
+                        <div class="rank-right">
+                            <span class="rank-pts">${s.pts} pts</span>
+                            ${champHtml}
+                        </div>
+                    `;
+                    d.onclick = () => {
+                        document.getElementById('viewModal').style.display='block';
+                        document.getElementById('viewModalTitle').innerText = s.name;
+                        app.renderSplitBracket('viewModalBody', state.db.users[s.name].picks || {}, 'read');
+                    };
                     l.appendChild(d);
                 });
             }
