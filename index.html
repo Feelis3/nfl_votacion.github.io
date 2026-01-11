@@ -13,9 +13,9 @@
             --border: #333;
             --text-main: #e0e0e0;
             --text-sub: #a0a0a0;
-            --accent: #00e676; /* Verde Neon */
+            --accent: #00e676;
             --danger: #ff5252;
-            --locked: #ff9800;
+            --gold: #ffd700;
             --nav-height: 60px;
         }
 
@@ -29,22 +29,16 @@
             border-bottom: 1px solid var(--border);
             display: flex; flex-direction: column; gap: 8px;
         }
-        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .header-top { display: flex; justify-content: center; align-items: center; width: 100%; position: relative; }
         .logo { font-weight: 900; font-size: 1.1rem; letter-spacing: 1px; color: white; text-transform: uppercase; display: flex; align-items: center; gap: 8px;}
         
-        /* CUENTA ATRÁS */
-        .countdown-bar {
-            font-size: 0.75rem; text-align: center; color: var(--accent);
-            background: rgba(0, 230, 118, 0.1); padding: 5px; border-radius: 4px;
-            font-weight: 700; border: 1px solid rgba(0, 230, 118, 0.2);
-            width: 100%;
+        /* ESTADO BARRA */
+        .status-bar {
+            font-size: 0.75rem; text-align: center; color: var(--text-sub);
+            background: rgba(255, 255, 255, 0.05); padding: 5px; border-radius: 4px;
+            font-weight: 700; border: 1px solid #333;
+            width: 100%; text-transform: uppercase; letter-spacing: 1px;
         }
-        .countdown-bar.expired { color: var(--danger); background: rgba(255, 82, 82, 0.1); border-color: rgba(255, 82, 82, 0.2); }
-
-        .user-panel { display: flex; align-items: center; gap: 15px; }
-        .user-name { font-weight: 700; color: white; font-size: 0.9rem; border-right: 1px solid #444; padding-right: 15px; }
-        .logout-btn { background: none; border: none; color: var(--text-sub); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; }
-        .auth-btn { background: white; color: black; border: none; padding: 6px 15px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
 
         /* LAYOUT */
         .container { max-width: 800px; margin: 0 auto; padding: 10px; }
@@ -73,39 +67,75 @@
         
         .team-row {
             display: flex; align-items: center; padding: 6px 8px; height: 48px;
-            border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s;
+            border-bottom: 1px solid var(--border); cursor: default; transition: 0.2s;
             user-select: none; -webkit-user-select: none;
+            opacity: 0.5; filter: grayscale(80%); /* Por defecto apagado */
         }
         .team-row:last-child { border-bottom: none; }
         
-        /* ESTADO BLOQUEADO (LOCKED) */
-        .team-row.locked { cursor: not-allowed; opacity: 0.6; }
-        .team-row.locked:hover { background: transparent; }
-
         .team-seed { background: #333; color: #aaa; font-size: 0.65rem; font-weight: bold; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 4px; margin-right: 6px; flex-shrink: 0;}
         .team-logo { width: 24px; height: 24px; object-fit: contain; margin-right: 6px; flex-shrink: 0; }
         .team-name { font-size: 0.8rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ESTADOS DE SELECCIÓN */
-        .team-row.selected { background: rgba(0, 230, 118, 0.15); border-left: 3px solid var(--accent); }
-        .team-row.selected .team-name { color: var(--accent); }
-        .team-row.selected .team-seed { background: var(--accent); color: black; }
+        /* --- LOGICA DE COLORES --- */
+        
+        /* Cuando es el PICK del usuario (en modal) */
+        .team-row.user-pick { 
+            background: rgba(255, 255, 255, 0.08); 
+            border-left: 3px solid #777; 
+            opacity: 1; 
+            filter: grayscale(0%);
+        }
 
-        /* ESTADOS DE VISUALIZACIÓN */
-        .team-row.read-selected { background: var(--accent); border-left: 3px solid white; opacity: 1; }
-        .team-row.read-selected .team-name { color: black; font-weight: 900; }
-        .team-row.read-selected .team-seed { background: black; color: white; }
-        .team-row.read-ignored { opacity: 0.3; filter: grayscale(100%); background: #111; } 
-        .winner-real { border-right: 4px solid #ffd700; }
+        /* Cuando es el GANADOR REAL (en bracket oficial o modal) */
+        .team-row.winner-real { 
+            background: linear-gradient(90deg, rgba(0, 230, 118, 0.1) 0%, rgba(0,0,0,0) 100%);
+            border-left: 3px solid var(--accent);
+            opacity: 1;
+            filter: grayscale(0%);
+        }
+        .team-row.winner-real .team-name { color: var(--accent); font-weight: 800; }
+        .team-row.winner-real .team-seed { background: var(--accent); color: black; }
+        
+        /* Checkmark solo en resultados oficiales o modo admin */
+        .team-row.winner-real.official-view::after {
+            content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            margin-left: auto; color: var(--accent); font-size: 0.8rem;
+        }
+
+        /* ACIERTO: Pick del usuario + Ganador Real */
+        .team-row.user-pick.winner-real {
+            background: linear-gradient(90deg, rgba(0, 230, 118, 0.25) 0%, rgba(0,0,0,0) 100%);
+            border-left: 3px solid var(--accent);
+        }
+        .team-row.user-pick.winner-real::after {
+            content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            margin-left: auto; color: var(--accent); font-size: 0.8rem;
+        }
+
+        /* FALLO: Pick del usuario + Eliminado en la realidad */
+        .team-row.user-pick.eliminated {
+            border-left: 3px solid var(--danger);
+            background: rgba(255, 82, 82, 0.1);
+            opacity: 0.8;
+        }
+        .team-row.user-pick.eliminated .team-name { color: var(--danger); text-decoration: line-through; }
+        .team-row.user-pick.eliminated::after {
+            content: '\f00d'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            margin-left: auto; color: var(--danger); font-size: 0.8rem;
+        }
 
         .ph-box { padding: 10px; text-align: center; color: #444; font-size: 0.65rem; border: 1px dashed #333; border-radius: 6px; margin-bottom: 5px; }
 
         /* SUPER BOWL */
         .sb-grid { display: flex; justify-content: center; margin-top: 10px; }
         .sb-card { width: 100%; max-width: 320px; border: 2px solid #555; }
-
+        .sb-card .winner-real { background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 0%, rgba(0,0,0,0) 100%); border-left-color: var(--gold); }
+        .sb-card .winner-real .team-name { color: var(--gold); }
+        
         /* RANKING */
-        .rank-row { background: var(--surface); padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #2a2a2a; }
+        .rank-row { background: var(--surface); padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #2a2a2a; transition: background 0.2s; }
+        .rank-row:active { background: #333; }
         .rank-info { display: flex; align-items: center; gap: 12px; }
         .rank-pos { font-weight: 900; color: #555; width: 25px; font-size: 0.9rem; }
         .rank-name { font-weight: 700; color: white; font-size: 0.95rem; }
@@ -120,19 +150,14 @@
         .nav-item.active i { transform: scale(1.1); }
 
         /* MODALES */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; backdrop-filter: blur(5px); justify-content: center; align-items: center; }
-        .login-box { background: #222; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; border: 1px solid #444; }
-        .login-input { background: #333; border: 1px solid #555; padding: 12px; border-radius: 8px; color: white; width: 100%; margin-bottom: 20px; text-align: center; font-size: 1rem; }
         .btn-full { background: var(--accent); color: black; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 800; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,230,118,0.3); }
+        .login-input { background: #333; border: 1px solid #555; padding: 12px; border-radius: 8px; color: white; width: 100%; margin-bottom: 20px; text-align: center; font-size: 1rem; }
 
         .full-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: none; overflow-y: auto; }
         .modal-nav-bar { position: sticky; top: 0; left: 0; width: 100%; height: 60px; background: #000; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 50; }
         .modal-back-btn { background: none; border: none; color: var(--accent); font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 8px; }
         .modal-title-text { font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
         
-        .fab { position: fixed; bottom: 80px; right: 20px; background: var(--accent); color: black; padding: 12px 25px; border-radius: 50px; font-weight: 900; border: none; box-shadow: 0 4px 20px rgba(0,230,118,0.4); z-index: 100; display: none; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
-        .fab.disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; }
-
         @media (max-width: 480px) {
             .team-name { font-size: 0.75rem; }
             .team-logo { width: 22px; height: 22px; }
@@ -147,35 +172,23 @@
 
     <header>
         <div class="header-top">
-            <div class="logo"><i class="fa-solid fa-football"></i> PLAYOFFS</div>
-            <div id="authContainer"></div>
+            <div class="logo"><i class="fa-solid fa-football"></i> PLAYOFFS 2026</div>
         </div>
-        <div id="countdown" class="countdown-bar">Cargando...</div>
+        <div class="status-bar">
+            <i class="fa-solid fa-lock"></i> QUINIELA CERRADA &bull; EN JUEGO
+        </div>
     </header>
 
     <div class="container">
         
         <div id="tab-ranking" class="section active">
-            <h4 style="text-align:center; color:#666; margin: 20px 0; text-transform: uppercase; letter-spacing: 1px;">Clasificación Global</h4>
+            <h4 style="text-align:center; color:#666; margin: 20px 0; text-transform: uppercase; letter-spacing: 1px;">Clasificación</h4>
             <div id="rankingList"></div>
-            <div style="text-align:center; font-size:0.75rem; color:#888; margin-top:20px; padding:15px; background:#1a1a1a; border-radius:8px; border:1px solid #333;">
-                <div style="margin-bottom:8px; font-weight:bold; color:white;">🎯 SISTEMA DE PUNTUACIÓN</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; text-align:left;">
-                    <div>Wild Card: <b style="color:var(--accent)">2 pts</b></div>
-                    <div>Emparejamiento: <b style="color:var(--accent)">1 pto</b></div>
-                    <div>Divisional: <b style="color:var(--accent)">3 pts</b></div>
-                    <div>Conference: <b style="color:var(--accent)">4 pts</b></div>
-                    <div style="grid-column: span 2; text-align:center; border-top:1px dashed #444; padding-top:5px; margin-top:5px;">
-                        Super Bowl: <b style="color:var(--accent)">5 pts</b>
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <div id="tab-vote" class="section">
-            <div id="guestMsg" style="text-align:center; padding:15px; background:#222; border-radius:8px; margin-bottom:15px; display:none; border:1px solid #333;">
-                <p style="color:#aaa; margin-bottom:10px; font-size:0.9rem;">Estás en modo invitado.</p>
-                <button class="btn-full" onclick="app.showLogin()" style="max-width:100%; padding:8px;">Iniciar Sesión</button>
+        <div id="tab-results" class="section">
+            <div style="text-align:center; padding:10px; margin-bottom:15px; color: var(--gold); font-size: 0.8rem; border:1px solid #333; border-radius:6px; background:#1a1a1a;">
+                RESULTADOS REALES ACTUALIZADOS
             </div>
 
             <div class="conf-header-row">
@@ -187,10 +200,7 @@
                 </div>
             </div>
             
-            <div id="voteBracket"></div>
-            <button class="fab" id="saveBtn" onclick="app.savePicks()" style="display:none">
-                <i class="fa-solid fa-floppy-disk"></i> Guardar
-            </button>
+            <div id="officialBracket"></div>
         </div>
 
         <div id="tab-admin" class="section">
@@ -199,7 +209,7 @@
                 <button class="btn-full" onclick="app.adminLogin()">Gestionar Resultados</button>
             </div>
             <div id="adminPanel" style="display:none;">
-                <h4 style="text-align:center;">RESULTADOS REALES</h4>
+                <h4 style="text-align:center;">ACTUALIZAR RESULTADOS</h4>
                 <div id="adminBracket"></div>
                 <button class="btn-full" style="margin-top:20px; background:#e0e0e0; color:black;" onclick="app.adminSave()">PUBLICAR OFICIALES</button>
             </div>
@@ -224,24 +234,14 @@
         </div>
     </div>
 
-    <div id="loginModal" class="modal-overlay">
-        <div class="login-box">
-            <h2 style="margin-top:0; color:white;">Bienvenido</h2>
-            <p style="color:#aaa; font-size:0.9rem; margin-bottom:20px;">Escribe tu nombre para participar.</p>
-            <input type="text" id="usernameInput" class="login-input" placeholder="Tu Nombre">
-            <button class="btn-full" onclick="app.doLogin()">ENTRAR</button>
-            <button onclick="document.getElementById('loginModal').style.display='none'" style="background:none; border:none; color:#666; margin-top:15px; cursor:pointer;">Cancelar</button>
-        </div>
-    </div>
-
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="app.nav('ranking')">
             <i class="fa-solid fa-trophy"></i>
             <span>Ranking</span>
         </button>
-        <button class="nav-item" onclick="app.nav('vote')">
-            <i class="fa-solid fa-list-ol"></i>
-            <span>Quiniela</span>
+        <button class="nav-item" onclick="app.nav('results')">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Resultados</span>
         </button>
         <button class="nav-item" onclick="app.nav('admin')">
             <i class="fa-solid fa-user-gear"></i>
@@ -285,10 +285,7 @@
             { id: "n1", h: "Bears", a: "Packers" }, { id: "n2", h: "Eagles", a: "49ers" }, { id: "n3", h: "Panthers", a: "Rams" }
         ];
 
-        // FECHA LÍMITE: Sábado 10 Enero 2026, 22:30 Hora España (GMT+1)
-        const DEADLINE = new Date("2026-01-10T22:30:00+01:00").getTime();
-
-        let state = { user: localStorage.getItem('nfl_final_v3_user'), db: {}, picks: {}, admin: {} };
+        let state = { db: {}, admin: {} };
 
         window.app = {
             init: () => {
@@ -296,98 +293,19 @@
                     state.db = snap.val() || {};
                     app.ui();
                 });
-                // Iniciar contador
-                setInterval(app.updateCountdown, 1000);
-                app.updateCountdown();
-            },
-
-            // Comprueba si ya pasó la fecha
-            isLocked: () => Date.now() > DEADLINE,
-
-            updateCountdown: () => {
-                const now = Date.now();
-                const diff = DEADLINE - now;
-                const el = document.getElementById('countdown');
-                
-                if (diff <= 0) {
-                    el.innerText = "🔒 QUINIELA CERRADA";
-                    el.classList.add('expired');
-                    if(!app.wasLocked) { app.wasLocked = true; app.ui(); }
-                } else {
-                    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const s = Math.floor((diff % (1000 * 60)) / 1000);
-                    el.innerText = `⏳ CIERRA EN: ${d}d ${h}h ${m}m ${s}s`;
-                    el.classList.remove('expired');
-                }
             },
 
             ui: () => {
-                const ac = document.getElementById('authContainer');
-                if(state.user) {
-                    ac.innerHTML = `
-                        <div class="user-panel">
-                            <span class="user-name">${state.user}</span>
-                            <button class="logout-btn" onclick="app.logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
-                        </div>`;
-                    
-                    if(state.db.users && state.db.users[state.user]) {
-                        state.picks = state.db.users[state.user].picks ? JSON.parse(JSON.stringify(state.db.users[state.user].picks)) : {};
-                    }
-                    
-                    // Lógica del botón guardar (Bloqueado si pasó la fecha)
-                    const saveBtn = document.getElementById('saveBtn');
-                    if(app.isLocked()) {
-                        saveBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Cerrado';
-                        saveBtn.classList.add('disabled');
-                        saveBtn.style.display = 'flex';
-                        saveBtn.onclick = null;
-                    } else {
-                        saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar';
-                        saveBtn.classList.remove('disabled');
-                        saveBtn.style.display = 'flex';
-                        saveBtn.onclick = app.savePicks;
-                    }
-                    
-                    document.getElementById('guestMsg').style.display = 'none';
-                    // Si está cerrado, renderiza en modo 'read' (solo lectura)
-                    const mode = app.isLocked() ? 'read' : 'edit';
-                    app.renderSplitBracket('voteBracket', state.picks, mode);
-                } else {
-                    ac.innerHTML = `<button class="auth-btn" onclick="app.showLogin()">ENTRAR</button>`;
-                    document.getElementById('saveBtn').style.display = 'none';
-                    document.getElementById('guestMsg').style.display = 'block';
-                    app.renderSplitBracket('voteBracket', {}, 'guest'); 
-                }
+                const realResults = state.db.results || {};
                 app.renderRank();
+                app.renderSplitBracket('officialBracket', realResults, 'read-official');
             },
             
-            showLogin: () => document.getElementById('loginModal').style.display = 'flex',
-            doLogin: () => {
-                const u = document.getElementById('usernameInput').value.trim();
-                if(u) {
-                    state.user = u; localStorage.setItem('nfl_final_v3_user', u);
-                    document.getElementById('loginModal').style.display = 'none';
-                    app.ui();
-                }
-            },
-            logout: () => {
-                localStorage.removeItem('nfl_final_v3_user');
-                state.user = null; state.picks = {};
-                app.ui();
-            },
             nav: (id) => {
                 document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
                 document.getElementById('tab-'+id).classList.add('active');
                 document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
                 event.currentTarget.classList.add('active');
-            },
-            savePicks: () => {
-                if(app.isLocked()) { alert("La quiniela está cerrada."); return; }
-                if(!state.user) return app.showLogin();
-                set(ref(db, `users/${state.user}`), {picks:state.picks, timestamp:Date.now()})
-                .then(()=>alert("¡Quiniela Guardada!"));
             },
 
             calcTree: (picksSource) => {
@@ -424,12 +342,12 @@
                 let sb = { id:'sb', ph:true };
                 const matchA = conf.find(m => m.c === 'A');
                 const matchN = conf.find(m => m.c === 'N');
-                const aChamp = (matchA && !matchA.ph && p[matchA.id] && (p[matchA.id]===matchA.h || p[matchA.id]===matchA.a)) ? p[matchA.id] : null;
-                const nChamp = (matchN && !matchN.ph && p[matchN.id] && (p[matchN.id]===matchN.h || p[matchN.id]===matchN.a)) ? p[matchN.id] : null;
+                const aChamp = (matchA && !matchA.ph && p[matchA.id]) ? p[matchA.id] : null;
+                const nChamp = (matchN && !matchN.ph && p[matchN.id]) ? p[matchN.id] : null;
 
                 if(aChamp && nChamp) sb = { id:'sb', h:aChamp, a:nChamp };
                 let ch = null;
-                if(!sb.ph && p['sb'] && (p['sb']===sb.h || p['sb']===sb.a)) ch = p['sb'];
+                if(!sb.ph && p['sb']) ch = p['sb'];
 
                 return { wc: WC_MATCHES, div, conf, sb, ch };
             },
@@ -439,8 +357,8 @@
                 const c = document.getElementById(contId); c.innerHTML = '';
                 const rounds = [{ t: 'Wild Card', d: t.wc }, { t: 'Divisional', d: t.div }, { t: 'Conference', d: t.conf }];
                 
-                // Si estamos editando y NO está bloqueado, permitimos editar
-                const canEdit = (mode === 'edit' && !app.isLocked());
+                const canEdit = (mode === 'admin');
+                const realResults = state.db.results || {};
 
                 rounds.forEach(rnd => {
                     const w = document.createElement('div'); w.className = 'round-wrapper';
@@ -455,27 +373,36 @@
                         const target = isAFC ? colA : colN;
 
                         if(m.ph) {
-                            const ph = document.createElement('div'); ph.className = 'ph-box'; ph.innerText = 'Esperando...';
+                            const ph = document.createElement('div'); ph.className = 'ph-box'; ph.innerText = 'Por definir...';
                             target.appendChild(ph);
                         } else {
                             const card = document.createElement('div'); card.className = 'match-card';
                             [m.h, m.a].forEach(tm => {
                                 const dat = TEAMS[tm];
-                                const sel = src[m.id] === tm;
-                                const real = mode==='read' && state.db.results && state.db.results[m.id] === tm;
+                                const userSelected = src[m.id] === tm;
+                                const isRealWinner = realResults[m.id] === tm;
+                                // CORRECCION: Solo consideramos el partido finalizado si el resultado es UN EQUIPO VALIDO
+                                const matchFinished = (realResults[m.id] && TEAMS[realResults[m.id]]);
+
                                 const r = document.createElement('div');
                                 let classes = 'team-row ';
-                                if(mode==='read') { if(sel) classes += 'read-selected '; else classes += 'read-ignored '; } 
-                                else if(mode==='edit' || mode==='admin') { if(sel) classes += 'selected '; }
-                                if(real) classes += 'winner-real ';
-                                // Si no se puede editar (y no es admin), añadimos clase locked
-                                if(!canEdit && mode !== 'admin') classes += 'locked ';
+                                
+                                if(mode === 'read-official') {
+                                    if(userSelected) classes += 'winner-real official-view '; 
+                                } else if(mode === 'read') {
+                                    if(userSelected) classes += 'user-pick ';
+                                    if(isRealWinner) classes += 'winner-real ';
+                                    if(userSelected && matchFinished && !isRealWinner) classes += 'eliminated ';
+                                } else if(mode === 'admin') {
+                                    if(userSelected) classes += 'winner-real ';
+                                }
                                 
                                 r.className = classes;
                                 r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>`;
                                 
-                                if(canEdit || mode==='admin') {
+                                if(canEdit) {
                                     r.onclick = () => { src[m.id]=tm; app.renderSplitBracket(contId, src, mode); };
+                                    r.style.cursor = 'pointer';
                                 }
                                 card.appendChild(r);
                             });
@@ -485,28 +412,41 @@
                     g.appendChild(colA); g.appendChild(colN); w.appendChild(g); c.appendChild(w);
                 });
 
+                // SUPER BOWL
                 const w = document.createElement('div'); w.className='round-wrapper';
                 w.innerHTML = `<div class="round-title">Super Bowl</div>`;
                 const sg = document.createElement('div'); sg.className='sb-grid';
                 
                 if(t.sb.ph) {
-                    const ph = document.createElement('div'); ph.className = 'ph-box'; ph.style.width='100%'; ph.innerText = 'Esperando...';
+                    const ph = document.createElement('div'); ph.className = 'ph-box'; ph.style.width='100%'; ph.innerText = 'Por definir...';
                     sg.appendChild(ph);
                 } else {
                     const card = document.createElement('div'); card.className='match-card sb-card';
                     [t.sb.h, t.sb.a].forEach(tm => {
                         const dat = TEAMS[tm];
-                        const sel = src.sb === tm;
+                        const userSelected = src.sb === tm;
+                        const isRealWinner = realResults.sb === tm;
+                        // CORRECCION: Validamos también aquí contra la lista de equipos
+                        const matchFinished = (realResults.sb && TEAMS[realResults.sb]);
+
                         const r = document.createElement('div');
                         let classes = 'team-row ';
-                        if(mode==='read') { if(sel) classes+='read-selected '; else classes+='read-ignored '; }
-                        else if(mode==='edit'||mode==='admin') { if(sel) classes+='selected '; }
-                        if(!canEdit && mode !== 'admin') classes += 'locked ';
+                        
+                        if(mode === 'read-official') {
+                            if(userSelected) classes += 'winner-real official-view '; 
+                        } else if(mode === 'read') {
+                            if(userSelected) classes += 'user-pick ';
+                            if(isRealWinner) classes += 'winner-real ';
+                            if(userSelected && matchFinished && !isRealWinner) classes += 'eliminated ';
+                        } else if(mode === 'admin') {
+                            if(userSelected) classes += 'winner-real ';
+                        }
 
                         r.className = classes;
                         r.innerHTML = `<span class="team-seed">${dat.s}</span><img src="${dat.logo}" class="team-logo"><span class="team-name">${tm}</span>`;
-                        if(canEdit || mode==='admin') {
+                        if(canEdit) {
                             r.onclick=()=>{ src.sb=tm; app.renderSplitBracket(contId, src, mode); };
+                            r.style.cursor = 'pointer';
                         }
                         card.appendChild(r);
                     });
@@ -517,8 +457,8 @@
                 if(t.ch) {
                     const dat = TEAMS[t.ch];
                     const winDiv = document.createElement('div');
-                    winDiv.style.cssText = "text-align:center; margin-top:20px; border:1px solid #333; padding:20px; border-radius:10px;";
-                    winDiv.innerHTML = `<small style="color:#666">CAMPEÓN</small><br><img src="${dat.logo}" style="width:60px; margin-top:10px;"><h2 style="margin:5px 0; color:white">${t.ch}</h2>`;
+                    winDiv.style.cssText = "text-align:center; margin-top:20px; border:1px solid #333; padding:20px; border-radius:10px; background: rgba(255, 215, 0, 0.05); border-color: var(--gold);";
+                    winDiv.innerHTML = `<small style="color:var(--gold); font-weight:bold;">CAMPEÓN</small><br><img src="${dat.logo}" style="width:60px; margin-top:10px;"><h2 style="margin:5px 0; color:white">${t.ch}</h2>`;
                     c.appendChild(winDiv);
                 }
             },
@@ -531,12 +471,12 @@
                 }
             },
             adminSave:()=>{
-                if(confirm("¿Publicar Resultados?")) set(ref(db,'results'), state.admin);
+                if(confirm("¿Publicar Resultados Oficiales?")) set(ref(db,'results'), state.admin);
             },
 
             renderRank: () => {
                 const l = document.getElementById('rankingList');
-                if(!state.db.users) { l.innerHTML="<div style='text-align:center;color:#555'>Sin datos</div>"; return; }
+                if(!state.db.users) { l.innerHTML="<div style='text-align:center;color:#555'>Cargando datos...</div>"; return; }
                 const real = state.db.results || {};
                 const scores = [];
                 const rt = app.calcTree(real);
@@ -547,28 +487,22 @@
                     const ut = app.calcTree(p);
 
                     WC_MATCHES.forEach(m => { if(real[m.id] && p[m.id] === real[m.id]) pts += 2; });
-
-                    const checkMatchup = (realMatch, userMatch) => {
-                        if(!realMatch || !userMatch || realMatch.ph || userMatch.ph) return false;
-                        const rTeams = [realMatch.h, realMatch.a].sort().join('-');
-                        const uTeams = [userMatch.h, userMatch.a].sort().join('-');
-                        return rTeams === uTeams;
+                    const checkMatchup = (rM, uM) => {
+                        if(!rM || !uM || rM.ph || uM.ph) return false;
+                        const rT = [rM.h, rM.a].sort().join('-'); const uT = [uM.h, uM.a].sort().join('-');
+                        return rT === uT;
                     };
-
                     rt.div.forEach(rM => {
                         const uM = ut.div.find(m => m.id === rM.id);
                         if(checkMatchup(rM, uM)) pts += 1;
                         if(real[rM.id] && p[rM.id] === real[rM.id]) pts += 3;
                     });
-
                     rt.conf.forEach(rM => {
                         const uM = ut.conf.find(m => m.id === rM.id);
                         if(checkMatchup(rM, uM)) pts += 1;
                         if(real[rM.id] && p[rM.id] === real[rM.id]) pts += 4;
                     });
-
-                    const rSB = rt.sb;
-                    const uSB = ut.sb;
+                    const rSB = rt.sb; const uSB = ut.sb;
                     if(checkMatchup(rSB, uSB)) pts += 1;
                     if(rt.ch && ut.ch === rt.ch) pts += 5;
 
@@ -579,16 +513,16 @@
                 l.innerHTML='';
                 scores.forEach((s,i)=>{
                     const d=document.createElement('div'); d.className='rank-row';
-                    let champHtml = '';
-                    if(s.winner && TEAMS[s.winner]) {
-                        champHtml = `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview" alt="${s.winner}">`;
-                    } else {
-                        champHtml = `<div class="rank-champ-preview" style="background:transparent"></div>`;
-                    }
+                    let champHtml = s.winner && TEAMS[s.winner] ? `<img src="${TEAMS[s.winner].logo}" class="rank-champ-preview">` : `<div class="rank-champ-preview" style="background:transparent"></div>`;
+                    
+                    let posColor = '#555';
+                    if(i===0) posColor = 'var(--gold)';
+                    if(i===1) posColor = '#c0c0c0';
+                    if(i===2) posColor = '#cd7f32';
 
                     d.innerHTML=`
                         <div class="rank-info">
-                            <span class="rank-pos">#${i+1}</span>
+                            <span class="rank-pos" style="color:${posColor}">#${i+1}</span>
                             <span class="rank-name">${s.name}</span>
                             ${champHtml}
                         </div>
