@@ -121,9 +121,12 @@
         .stat-lbl { font-size: 0.6rem; color: #777; text-transform: uppercase; }
 
         /* PARTIDOS EN VIVO */
-        .live-card { background: #222; border-radius: 8px; overflow: hidden; border: 1px solid #333; margin-bottom: 15px; cursor: pointer; position: relative; }
-        .live-card::after { content: 'VER DETALLES >'; position: absolute; bottom: 5px; right: 10px; font-size: 0.55rem; color: #555; font-weight: 800; }
-        .live-header { background: #151515; padding: 8px 12px; font-size: 0.7rem; color: #aaa; display: flex; justify-content: space-between; border-bottom: 1px solid #333; }
+        .live-card { background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 15px; cursor: pointer; position: relative; transition: 0.3s; }
+        
+        /* ZONA ROJA ANIMATION */
+        .live-card.red-zone-active { border: 1px solid var(--danger); box-shadow: 0 0 10px rgba(255, 82, 82, 0.3); }
+        
+        .live-header { background: #151515; padding: 8px 12px; font-size: 0.7rem; color: #aaa; display: flex; justify-content: space-between; border-bottom: 1px solid #333; align-items: center; }
         .live-status { color: #fff; font-weight: 700; }
         .live-status.in-progress { color: var(--danger); animation: pulse 2s infinite; }
         @keyframes pulse { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
@@ -135,6 +138,11 @@
         .live-score { font-size: 1.8rem; font-weight: 900; color: white; letter-spacing: 1px; }
         .live-vs { font-size: 0.8rem; color: #555; font-weight: 700; }
 
+        /* GAME SITUATION IN LIST */
+        .game-situation { font-size: 0.65rem; color: var(--accent); font-weight: 900; text-transform: uppercase; margin-right: 8px; }
+        .red-zone-text { color: var(--danger); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
         /* MODAL PARTIDO DETALLES */
         .match-modal-header { text-align: center; padding: 20px; background: #111; border-bottom: 1px solid #333; }
         .mm-score-board { display: flex; justify-content: center; align-items: center; gap: 30px; margin-top: 15px; }
@@ -145,6 +153,11 @@
         
         .mm-meta { text-align: center; padding: 10px; color: #888; font-size: 0.8rem; border-bottom: 1px solid #333; background: #151515; }
         
+        /* ULTIMA JUGADA BOX */
+        .last-play-box { background: rgba(0, 230, 118, 0.05); border-bottom: 1px solid var(--border); padding: 15px; text-align: left; }
+        .lp-label { font-size: 0.65rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+        .lp-text { font-size: 0.85rem; color: white; line-height: 1.3; }
+
         /* POSESION */
         .ball-icon { display:none; color: #ff9800; font-size: 1.2rem; margin-top: 5px; animation: bounce 1s infinite; }
         .has-possession .ball-icon { display: block; }
@@ -165,16 +178,6 @@
         .si-desc { font-size: 0.85rem; color: #ddd; line-height: 1.3; }
         .si-score { font-size: 1rem; font-weight: 900; color: white; margin-left: auto; align-self: center; background:#222; padding: 5px 10px; border-radius: 6px; border: 1px solid #444; }
 
-        /* COMPARACION DE ESTADISTICAS (NUEVO) */
-        .stats-comparison { padding: 20px; }
-        .sc-row { margin-bottom: 15px; }
-        .sc-label { text-align: center; color: #888; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-        .sc-bars { display: flex; align-items: center; gap: 10px; }
-        .sc-val { font-weight: 900; color: white; font-size: 0.9rem; width: 40px; text-align: center; }
-        .sc-bar-bg { flex: 1; height: 8px; background: #333; border-radius: 4px; overflow: hidden; display: flex; }
-        .sc-fill-home { height: 100%; background: var(--team-a-color); }
-        .sc-fill-away { height: 100%; background: var(--team-b-color); }
-        
         /* BARRA DE PREDICCION */
         .prediction-box { padding: 20px; border-bottom: 1px solid #333; }
         .pred-title { text-align: center; font-size: 0.7rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
@@ -183,15 +186,31 @@
         .pred-fill-r { height: 100%; background: var(--team-b-color, #555); flex: 1; }
         .pred-labels { display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.75rem; font-weight: 700; color: white; }
 
-        /* NOTICIAS */
-        .news-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 12px; transition: 0.2s; cursor: pointer; display: block; text-decoration: none; position: relative; overflow: hidden; padding-left: 20px; }
-        .news-card[data-type="PARTIDO"] { border-left: 4px solid var(--gold); }
-        .news-card[data-type="NOTICIA"] { border-left: 4px solid #444; }
-        .news-tag { font-size: 0.6rem; font-weight: 900; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; display: inline-block; }
-        .news-card[data-type="PARTIDO"] .news-tag { background: rgba(255, 215, 0, 0.2); color: var(--gold); }
-        .news-card[data-type="NOTICIA"] .news-tag { background: rgba(255, 255, 255, 0.1); color: #aaa; }
-        .news-title { color: white; font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; line-height: 1.4; }
-        .news-meta { color: #777; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+        /* NOTICIAS ESTILO REVISTA */
+        .news-card { 
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px; 
+            padding: 20px; margin-bottom: 15px; transition: 0.2s; cursor: pointer; 
+            display: block; text-decoration: none; position: relative; overflow: hidden; 
+            min-height: 100px; display: flex; flex-direction: column; justify-content: flex-end;
+        }
+        
+        /* Marca de agua */
+        .news-bg-watermark {
+            position: absolute; right: -20px; top: -20px; width: 120px; height: 120px; 
+            opacity: 0.1; transform: rotate(-15deg); object-fit: contain; pointer-events: none;
+        }
+
+        .news-tag { 
+            font-size: 0.6rem; font-weight: 900; text-transform: uppercase; 
+            padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; display: inline-block; width: fit-content;
+            background: rgba(255,255,255,0.1); color: #ccc;
+        }
+        
+        .news-title { 
+            color: white; font-weight: 800; font-size: 1.1rem; margin-bottom: 5px; 
+            line-height: 1.3; text-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 2; 
+        }
+        .news-meta { color: #888; font-size: 0.7rem; font-weight: 600; z-index: 2; }
 
         /* NAV - 5 ITEMS */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height); background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; }
@@ -205,12 +224,10 @@
         .login-input { background: #333; border: 1px solid #555; padding: 14px; border-radius: 8px; color: white; width: 100%; margin-bottom: 20px; text-align: center; font-size: 1rem; outline: none; }
 
         .full-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: none; overflow-y: auto; }
-        .modal-nav-bar { position: sticky; top: 0; left: 0; width: 100%; height: 60px; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 50; }
+        .modal-nav-bar { position: sticky; top: 0; left: 0; width: 100%; height: 60px; background: rgba(15,15,15,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 50; }
         .modal-back-btn { background: none; border: none; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 0; display: flex; align-items: center; gap: 8px; }
         .modal-title-text { font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 1rem; }
         
-        .section-header { padding: 25px 20px 10px 20px; color: #555; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-
         @media (max-width: 480px) {
             .team-name { font-size: 0.8rem; }
             .team-row { padding: 6px 8px; height: 46px; }
@@ -381,7 +398,9 @@
             "Panthers": { s:4, c:"N", color:"#0085CA", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png" },
             "Rams": { s:5, c:"N", color:"#003594", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" },
             "49ers": { s:6, c:"N", color:"#AA0000", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" },
-            "Packers": { s:7, c:"N", color:"#203731", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" }
+            "Packers": { s:7, c:"N", color:"#203731", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" },
+            "Chiefs": { s:1, c:"A", color:"#E31837", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png" },
+            "Ravens": { s:2, c:"A", color:"#241773", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" }
         };
 
         const WC_MATCHES = [
@@ -414,7 +433,6 @@
                 if(id === 'news') app.loadNews();
             },
 
-            // CARGA RSS
             loadNews: async () => {
                 const cont = document.getElementById('newsList');
                 if(cont.innerHTML.includes('news-card')) return; 
@@ -428,16 +446,35 @@
                         cont.innerHTML = '';
                         data.items.slice(0, 10).forEach(item => {
                             const date = new Date(item.pubDate).toLocaleDateString('es-ES', {day:'numeric', month:'short'});
-                            const title = item.title.toLowerCase();
+                            const title = item.title;
                             let type = 'NOTICIA';
-                            if(title.includes('vs') || title.includes('gana') || title.includes('vence') || title.includes('marcador') || title.includes('resumen')) {
+                            if(title.toLowerCase().includes('vs') || title.toLowerCase().includes('gana') || title.toLowerCase().includes('vence')) {
                                 type = 'PARTIDO';
                             }
+                            
+                            // DETECTAR EQUIPO PARA COLOR/LOGO
+                            let teamColor = '#444';
+                            let teamLogo = '';
+                            let found = false;
+                            
+                            for(const [key, val] of Object.entries(TEAMS)) {
+                                if(title.includes(key)) {
+                                    teamColor = val.color;
+                                    teamLogo = val.logo;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            
+                            let watermark = found ? `<img src="${teamLogo}" class="news-bg-watermark">` : '';
+                            let style = found ? `background: linear-gradient(135deg, #1e1e1e 60%, ${teamColor}40 100%); border-left: 4px solid ${teamColor};` : '';
+
                             cont.innerHTML += `
-                                <a href="${item.link}" target="_blank" class="news-card" data-type="${type}">
+                                <a href="${item.link}" target="_blank" class="news-card" data-type="${type}" style="${style}">
+                                    ${watermark}
                                     <span class="news-tag">${type}</span>
-                                    <div class="news-title">${item.title}</div>
-                                    <div class="news-meta"><span class="news-source">ESPN DEPORTES</span><span>${date}</span></div>
+                                    <div class="news-title">${title}</div>
+                                    <div class="news-meta"><span class="news-source">ESPN DEPORTES</span> &bull; <span>${date}</span></div>
                                 </a>
                             `;
                         });
@@ -468,28 +505,41 @@
                         const comp = evt.competitions[0];
                         const team1 = comp.competitors[1]; // Home
                         const team2 = comp.competitors[0]; // Away
-                        const status = evt.status.type.state; // pre, in, post
+                        const status = evt.status.type.state;
                         const statusDetail = evt.status.type.detail;
                         const score1 = team1.score;
                         const score2 = team2.score;
-
-                        let statusClass = '';
-                        if(status === 'in') statusClass = 'in-progress';
-
-                        // Traducir estados simples
+                        let statusClass = status === 'in' ? 'in-progress' : '';
                         let statusText = statusDetail.replace('Final', 'FINAL').replace('OT', 'PRÓRROGA');
+                        
                         if(status === 'pre') {
                             const d = new Date(evt.date);
                             statusText = d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
                         }
 
+                        // SITUACION DE JUEGO EN LISTA
+                        let situationHtml = '';
+                        let cardClass = 'live-card';
+                        
+                        if(status === 'in' && comp.situation) {
+                            if(comp.situation.isRedZone) {
+                                cardClass += ' red-zone-active';
+                                situationHtml = '<span class="game-situation red-zone-text">🚨 ZONA ROJA</span>';
+                            } else if(comp.situation.down > 0) {
+                                situationHtml = `<span class="game-situation">${comp.situation.down}ª y ${comp.situation.distance}</span>`;
+                            }
+                        }
+
                         const card = document.createElement('div');
-                        card.className = 'live-card';
+                        card.className = cardClass;
                         card.onclick = () => app.openMatchModal(idx);
                         card.innerHTML = `
                             <div class="live-header">
-                                <span>${evt.name}</span>
-                                <span class="live-status ${statusClass}">${statusText}</span>
+                                <span>${evt.shortName}</span>
+                                <div style="display:flex; align-items:center;">
+                                    ${situationHtml}
+                                    <span class="live-status ${statusClass}">${statusText}</span>
+                                </div>
                             </div>
                             <div class="live-body">
                                 <div class="live-team">
@@ -523,7 +573,6 @@
                 modal.style.display = 'block';
 
                 try {
-                    // LLAMADA DETALLADA PARA JUGADAS
                     const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${gameId}`);
                     const detailed = await res.json();
                     
@@ -531,9 +580,8 @@
                     const home = comp.competitors[1];
                     const away = comp.competitors[0];
                     const venue = detailed.gameInfo ? detailed.gameInfo.venue.fullName : 'Estadio';
-                    const statusState = detailed.header.competitions[0].status.type.state; // 'pre', 'in', 'post'
+                    const statusState = detailed.header.competitions[0].status.type.state;
                     
-                    // FIX UNDEFINED SCORE: SI ES 'PRE', NO MOSTRAR 0-0 SINO VS o HORA
                     let scoreDisplay = "";
                     let timeStr = "";
                     if(statusState === 'pre') {
@@ -544,12 +592,10 @@
                         scoreDisplay = `<div class="mm-score">${home.score || 0} - ${away.score || 0}</div>`;
                     }
 
-                    // FIX LOGOS: BUSCAR EN ARRAY DE LOGOS O FALLBACK
                     const getLogo = (t) => (t.team.logos && t.team.logos[0] && t.team.logos[0].href) || t.team.logo || 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png';
                     const homeLogo = getLogo(home);
                     const awayLogo = getLogo(away);
 
-                    // LOGICA POSESION
                     let possessionTeamId = null;
                     if(statusState === 'in' && detailed.header.competitions[0].situation && detailed.header.competitions[0].situation.possession) {
                         possessionTeamId = detailed.header.competitions[0].situation.possession;
@@ -558,13 +604,28 @@
                     const awayClass = (possessionTeamId === away.id) ? 'has-possession' : '';
 
                     let homePct = 55; let awayPct = 45;
-                    if(detailed.predictor) { homePct = detailed.predictor.homeTeam.gameProjection; awayPct = 100 - homePct; }
+                    if(detailed.predictor) {
+                        homePct = detailed.predictor.homeTeam.gameProjection;
+                        awayPct = 100 - homePct;
+                    }
+
+                    // --- LAST PLAY (ULTIMA JUGADA) ---
+                    let lastPlayHtml = '';
+                    if(detailed.drives && detailed.drives.current && detailed.drives.current.plays && detailed.drives.current.plays.length > 0) {
+                        const plays = detailed.drives.current.plays;
+                        const lastPlay = plays[plays.length - 1];
+                        lastPlayHtml = `
+                            <div class="last-play-box">
+                                <div class="lp-label">ÚLTIMA JUGADA</div>
+                                <div class="lp-text">${lastPlay.text}</div>
+                            </div>
+                        `;
+                    }
 
                     // --- GENERACIÓN DE CONTENIDO CONDICIONAL ---
                     let bottomContent = '';
 
                     if(statusState === 'pre') {
-                        // SI ES PREVIA: Solo mostrar hora y ocultar lideres/anotaciones
                         bottomContent = `
                             <div style="text-align:center; padding:30px; color:#666;">
                                 <i class="fa-regular fa-clock" style="font-size:2rem; margin-bottom:10px;"></i>
@@ -573,55 +634,6 @@
                             </div>
                         `;
                     } else {
-                        // ESTADISTICAS DE EQUIPO COMPARATIVAS
-                        let teamStatsHtml = '';
-                        if(detailed.boxscore && detailed.boxscore.teams) {
-                            // Mapear stats (Yardas, Passing, Rushing, Turnovers)
-                            const findStat = (stats, name) => {
-                                const s = stats.find(x => x.name === name);
-                                return s ? s.displayValue : '0';
-                            };
-                            
-                            const awayStats = detailed.boxscore.teams[0].statistics;
-                            const homeStats = detailed.boxscore.teams[1].statistics;
-
-                            const statsToShow = [
-                                { label: 'Yardas Totales', key: 'totalYards' },
-                                { label: 'Yardas Pase', key: 'netPassingYards' },
-                                { label: 'Yardas Carrera', key: 'rushingYards' },
-                                { label: 'Pérdidas (Turnovers)', key: 'turnovers' },
-                                { label: 'Posesión', key: 'possessionTime' }
-                            ];
-
-                            teamStatsHtml = '<div class="stats-comparison">';
-                            statsToShow.forEach(st => {
-                                const hVal = findStat(homeStats, st.key);
-                                const aVal = findStat(awayStats, st.key);
-                                // Parse for Width calculation (simple logic)
-                                let hInt = parseInt(hVal) || 0; let aInt = parseInt(aVal) || 0;
-                                let total = hInt + aInt; 
-                                if(total === 0) total = 1;
-                                let hW = (hInt / total) * 100;
-                                if(st.key === 'possessionTime') hW = 50; // hard to parse time string quickly here
-
-                                teamStatsHtml += `
-                                    <div class="sc-row">
-                                        <div class="sc-label">${st.label}</div>
-                                        <div class="sc-bars">
-                                            <span class="sc-val">${aVal}</span>
-                                            <div class="sc-bar-bg">
-                                                <div class="sc-fill-away" style="width:${100-hW}%"></div>
-                                                <div class="sc-fill-home" style="width:${hW}%"></div>
-                                            </div>
-                                            <span class="sc-val">${hVal}</span>
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                            teamStatsHtml += '</div>';
-                        }
-
-                        // SI ESTA EN JUEGO O FINALIZADO: Mostrar todo
                         let scoringHtml = '';
                         if(detailed.scoringPlays && detailed.scoringPlays.length > 0) {
                             detailed.scoringPlays.forEach(play => {
@@ -643,17 +655,19 @@
                                         <div class="si-score">${play.homeScore}-${play.awayScore}</div>
                                     </div>`;
                             });
-                        } else { scoringHtml = '<div style="text-align:center;color:#666;padding:20px;">Sin anotaciones aún.</div>'; }
+                        } else {
+                            scoringHtml = '<div style="text-align:center;color:#666;padding:20px;">Sin anotaciones aún.</div>';
+                        }
 
                         bottomContent = `
-                            <div class="section-header">Estadísticas de Equipo</div>
-                            ${teamStatsHtml}
-                            <div class="section-header">Anotaciones</div>
-                            <div class="scoring-list">${scoringHtml}</div>
+                            ${lastPlayHtml}
+                            <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Anotaciones (Minuto a Minuto)</h4>
+                            <div class="scoring-list">
+                                ${scoringHtml}
+                            </div>
                         `;
                     }
 
-                    // RENDER FINAL DEL MODAL
                     content.innerHTML = `
                         <div class="match-modal-header">
                             <div style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">${venue}</div>
@@ -672,13 +686,19 @@
                             </div>
                         </div>
                         <div class="mm-meta">Estado: <span style="color:#fff; font-weight:bold">${detailed.header.competitions[0].status.type.detail}</span></div>
+                        
                         <div class="prediction-box">
                             <div class="pred-title">Probabilidad de Victoria (ESPN Analytics)</div>
                             <div class="pred-bar" style="--team-a-color: #${home.team.color}; --team-b-color: #${away.team.color}">
-                                <div class="pred-fill-l" style="width:${homePct}%"></div><div class="pred-fill-r"></div>
+                                <div class="pred-fill-l" style="width:${homePct}%"></div>
+                                <div class="pred-fill-r"></div>
                             </div>
-                            <div class="pred-labels"><span style="color:#${home.team.color}">${Math.round(homePct)}% ${home.team.name}</span><span style="color:#${away.team.color}">${Math.round(awayPct)}% ${away.team.name}</span></div>
+                            <div class="pred-labels">
+                                <span style="color:#${home.team.color}">${Math.round(homePct)}% ${home.team.name}</span>
+                                <span style="color:#${away.team.color}">${Math.round(awayPct)}% ${away.team.name}</span>
+                            </div>
                         </div>
+                        
                         ${bottomContent}
                     `;
 
