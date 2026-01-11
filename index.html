@@ -157,7 +157,6 @@
         .si-content { flex: 1; }
         .si-time { font-size: 0.65rem; color: #777; margin-bottom: 4px; font-weight: 600; }
         
-        /* BADGES DE ANOTACION */
         .score-tag { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-right: 6px; color:black; text-transform: uppercase; display: inline-block; vertical-align: middle; }
         .tag-td { background: var(--td-color); box-shadow: 0 0 10px rgba(0, 200, 83, 0.4); }
         .tag-fg { background: var(--fg-color); color: white; }
@@ -166,6 +165,16 @@
         .si-desc { font-size: 0.85rem; color: #ddd; line-height: 1.3; }
         .si-score { font-size: 1rem; font-weight: 900; color: white; margin-left: auto; align-self: center; background:#222; padding: 5px 10px; border-radius: 6px; border: 1px solid #444; }
 
+        /* COMPARACION DE ESTADISTICAS (NUEVO) */
+        .stats-comparison { padding: 20px; }
+        .sc-row { margin-bottom: 15px; }
+        .sc-label { text-align: center; color: #888; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .sc-bars { display: flex; align-items: center; gap: 10px; }
+        .sc-val { font-weight: 900; color: white; font-size: 0.9rem; width: 40px; text-align: center; }
+        .sc-bar-bg { flex: 1; height: 8px; background: #333; border-radius: 4px; overflow: hidden; display: flex; }
+        .sc-fill-home { height: 100%; background: var(--team-a-color); }
+        .sc-fill-away { height: 100%; background: var(--team-b-color); }
+        
         /* LIDERES EN MODAL */
         .game-leaders { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 15px 20px 15px; }
         .gl-box { background: #222; border-radius: 6px; padding: 10px; display: flex; gap: 10px; align-items: center; border: 1px solid #333; }
@@ -411,103 +420,67 @@
                 if(id === 'news') app.loadNews();
             },
 
-            // CARGA RSS
             loadNews: async () => {
                 const cont = document.getElementById('newsList');
                 if(cont.innerHTML.includes('news-card')) return; 
                 cont.innerHTML = '<div style="text-align:center;padding:30px;color:#666"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem; margin-bottom:10px;"></i><br>Cargando datos en español...</div>';
-                
                 try {
                     const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.espn.com.mx/espn/rss/nfl/news');
                     const data = await res.json();
-                    
                     if(data.status === 'ok') {
                         cont.innerHTML = '';
                         data.items.slice(0, 10).forEach(item => {
                             const date = new Date(item.pubDate).toLocaleDateString('es-ES', {day:'numeric', month:'short'});
                             const title = item.title.toLowerCase();
                             let type = 'NOTICIA';
-                            if(title.includes('vs') || title.includes('gana') || title.includes('vence') || title.includes('marcador') || title.includes('resumen')) {
-                                type = 'PARTIDO';
-                            }
+                            if(title.includes('vs') || title.includes('gana') || title.includes('vence') || title.includes('marcador') || title.includes('resumen')) type = 'PARTIDO';
                             cont.innerHTML += `
                                 <a href="${item.link}" target="_blank" class="news-card" data-type="${type}">
                                     <span class="news-tag">${type}</span>
                                     <div class="news-title">${item.title}</div>
                                     <div class="news-meta"><span class="news-source">ESPN DEPORTES</span><span>${date}</span></div>
-                                </a>
-                            `;
+                                </a>`;
                         });
-                    } else {
-                        cont.innerHTML = '<div style="text-align:center;padding:20px;">Sin conexión.</div>';
-                    }
-                } catch(e) {
-                    cont.innerHTML = '<div style="text-align:center;padding:20px;">Error al cargar datos.</div>';
-                }
+                    } else cont.innerHTML = '<div style="text-align:center;padding:20px;">Sin conexión.</div>';
+                } catch(e) { cont.innerHTML = '<div style="text-align:center;padding:20px;">Error al cargar datos.</div>'; }
             },
 
             loadLiveGames: async () => {
                 const c = document.getElementById('liveGamesList');
                 c.innerHTML = '<div class="ph-box"><i class="fa-solid fa-sync fa-spin"></i> Conectando con ESPN...</div>';
-                
                 try {
                     const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard');
                     const data = await res.json();
                     state.liveData = data.events || [];
-
-                    if(state.liveData.length === 0) {
-                        c.innerHTML = '<div class="ph-box">No hay partidos programados para hoy.</div>';
-                        return;
-                    }
-
+                    if(state.liveData.length === 0) { c.innerHTML = '<div class="ph-box">No hay partidos programados para hoy.</div>'; return; }
                     c.innerHTML = '';
                     state.liveData.forEach((evt, idx) => {
                         const comp = evt.competitions[0];
                         const team1 = comp.competitors[1]; // Home
                         const team2 = comp.competitors[0]; // Away
-                        const status = evt.status.type.state; // pre, in, post
+                        const status = evt.status.type.state;
                         const statusDetail = evt.status.type.detail;
                         const score1 = team1.score;
                         const score2 = team2.score;
-
-                        let statusClass = '';
-                        if(status === 'in') statusClass = 'in-progress';
-
-                        // Traducir estados simples
+                        let statusClass = status === 'in' ? 'in-progress' : '';
                         let statusText = statusDetail.replace('Final', 'FINAL').replace('OT', 'PRÓRROGA');
                         if(status === 'pre') {
                             const d = new Date(evt.date);
                             statusText = d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
                         }
-
                         const card = document.createElement('div');
                         card.className = 'live-card';
                         card.onclick = () => app.openMatchModal(idx);
                         card.innerHTML = `
-                            <div class="live-header">
-                                <span>${evt.name}</span>
-                                <span class="live-status ${statusClass}">${statusText}</span>
-                            </div>
+                            <div class="live-header"><span>${evt.name}</span><span class="live-status ${statusClass}">${statusText}</span></div>
                             <div class="live-body">
-                                <div class="live-team">
-                                    <img src="${team1.team.logo}" class="live-logo">
-                                    <span class="live-name">${team1.team.abbreviation}</span>
-                                </div>
-                                <div class="live-score-col">
-                                    ${status === 'pre' ? '<span class="live-vs">VS</span>' : `<span class="live-score">${score1} - ${score2}</span>`}
-                                </div>
-                                <div class="live-team">
-                                    <img src="${team2.team.logo}" class="live-logo">
-                                    <span class="live-name">${team2.team.abbreviation}</span>
-                                </div>
-                            </div>
-                        `;
+                                <div class="live-team"><img src="${team1.team.logo}" class="live-logo"><span class="live-name">${team1.team.abbreviation}</span></div>
+                                <div class="live-score-col">${status === 'pre' ? '<span class="live-vs">VS</span>' : `<span class="live-score">${score1} - ${score2}</span>`}</div>
+                                <div class="live-team"><img src="${team2.team.logo}" class="live-logo"><span class="live-name">${team2.team.abbreviation}</span></div>
+                            </div>`;
                         c.appendChild(card);
                     });
-
-                } catch(e) {
-                    c.innerHTML = '<div class="ph-box">Error cargando partidos.</div>';
-                }
+                } catch(e) { c.innerHTML = '<div class="ph-box">Error cargando partidos.</div>'; }
             },
 
             openMatchModal: async (idx) => {
@@ -515,22 +488,19 @@
                 const gameId = evt.id;
                 const modal = document.getElementById('matchModal');
                 const content = document.getElementById('matchModalContent');
-                
                 content.innerHTML = '<div style="text-align:center;padding:50px;color:#888;"><i class="fa-solid fa-football fa-spin"></i><br>Obteniendo jugadas...</div>';
                 modal.style.display = 'block';
 
                 try {
-                    // LLAMADA DETALLADA PARA JUGADAS
                     const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${gameId}`);
                     const detailed = await res.json();
-                    
                     const comp = detailed.header.competitions[0];
                     const home = comp.competitors[1];
                     const away = comp.competitors[0];
                     const venue = detailed.gameInfo ? detailed.gameInfo.venue.fullName : 'Estadio';
                     const statusState = detailed.header.competitions[0].status.type.state; // 'pre', 'in', 'post'
                     
-                    // FIX UNDEFINED SCORE: SI ES 'PRE', NO MOSTRAR 0-0 SINO VS o HORA
+                    // FIX UNDEFINED SCORE
                     let scoreDisplay = "";
                     let timeStr = "";
                     if(statusState === 'pre') {
@@ -541,12 +511,12 @@
                         scoreDisplay = `<div class="mm-score">${home.score || 0} - ${away.score || 0}</div>`;
                     }
 
-                    // FIX LOGOS: BUSCAR EN ARRAY DE LOGOS O FALLBACK
+                    // FIX LOGOS
                     const getLogo = (t) => (t.team.logos && t.team.logos[0] && t.team.logos[0].href) || t.team.logo || 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png';
                     const homeLogo = getLogo(home);
                     const awayLogo = getLogo(away);
 
-                    // LOGICA POSESION (SOLO SI ESTÁ EN JUEGO)
+                    // LOGICA POSESION
                     let possessionTeamId = null;
                     if(statusState === 'in' && detailed.header.competitions[0].situation && detailed.header.competitions[0].situation.possession) {
                         possessionTeamId = detailed.header.competitions[0].situation.possession;
@@ -555,16 +525,12 @@
                     const awayClass = (possessionTeamId === away.id) ? 'has-possession' : '';
 
                     let homePct = 55; let awayPct = 45;
-                    if(detailed.predictor) {
-                        homePct = detailed.predictor.homeTeam.gameProjection;
-                        awayPct = 100 - homePct;
-                    }
+                    if(detailed.predictor) { homePct = detailed.predictor.homeTeam.gameProjection; awayPct = 100 - homePct; }
 
                     // --- GENERACIÓN DE CONTENIDO CONDICIONAL ---
                     let bottomContent = '';
 
                     if(statusState === 'pre') {
-                        // SI ES PREVIA: Solo mostrar hora y ocultar lideres/anotaciones
                         bottomContent = `
                             <div style="text-align:center; padding:30px; color:#666;">
                                 <i class="fa-regular fa-clock" style="font-size:2rem; margin-bottom:10px;"></i>
@@ -573,7 +539,54 @@
                             </div>
                         `;
                     } else {
-                        // SI ESTA EN JUEGO O FINALIZADO: Mostrar todo
+                        // ESTADISTICAS DE EQUIPO COMPARATIVAS
+                        let teamStatsHtml = '';
+                        if(detailed.boxscore && detailed.boxscore.teams) {
+                            // Mapear stats (Yardas, Passing, Rushing, Turnovers)
+                            const findStat = (stats, name) => {
+                                const s = stats.find(x => x.name === name);
+                                return s ? s.displayValue : '0';
+                            };
+                            
+                            const awayStats = detailed.boxscore.teams[0].statistics;
+                            const homeStats = detailed.boxscore.teams[1].statistics;
+
+                            const statsToShow = [
+                                { label: 'Yardas Totales', key: 'totalYards' },
+                                { label: 'Yardas Pase', key: 'netPassingYards' },
+                                { label: 'Yardas Carrera', key: 'rushingYards' },
+                                { label: 'Pérdidas (Turnovers)', key: 'turnovers' },
+                                { label: 'Posesión', key: 'possessionTime' }
+                            ];
+
+                            teamStatsHtml = '<div class="stats-comparison">';
+                            statsToShow.forEach(st => {
+                                const hVal = findStat(homeStats, st.key);
+                                const aVal = findStat(awayStats, st.key);
+                                // Parse for Width calculation (simple logic)
+                                let hInt = parseInt(hVal) || 0; let aInt = parseInt(aVal) || 0;
+                                let total = hInt + aInt; 
+                                if(total === 0) total = 1;
+                                let hW = (hInt / total) * 100;
+                                if(st.key === 'possessionTime') hW = 50; // hard to parse time string quickly here
+
+                                teamStatsHtml += `
+                                    <div class="sc-row">
+                                        <div class="sc-label">${st.label}</div>
+                                        <div class="sc-bars">
+                                            <span class="sc-val">${aVal}</span>
+                                            <div class="sc-bar-bg">
+                                                <div class="sc-fill-away" style="width:${100-hW}%"></div>
+                                                <div class="sc-fill-home" style="width:${hW}%"></div>
+                                            </div>
+                                            <span class="sc-val">${hVal}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            teamStatsHtml += '</div>';
+                        }
+
                         let scoringHtml = '';
                         if(detailed.scoringPlays && detailed.scoringPlays.length > 0) {
                             detailed.scoringPlays.forEach(play => {
@@ -583,7 +596,6 @@
                                 if(typeText.includes('Touchdown')) { badgeClass = 'tag-td'; badgeLabel = 'TOUCHDOWN'; }
                                 else if(typeText.includes('Field Goal')) { badgeClass = 'tag-fg'; badgeLabel = 'GOL DE CAMPO'; }
                                 else if(typeText.includes('Safety')) { badgeClass = 'tag-sf'; badgeLabel = 'SAFETY'; }
-                                
                                 scoringHtml += `
                                     <div class="scoring-item">
                                         <img src="${teamLogo}" class="si-logo">
@@ -614,6 +626,8 @@
                         if(leadersHtml === '') leadersHtml = '<div style="text-align:center;color:#666; font-size:0.8rem; width:100%">Estadísticas disponibles al inicio.</div>';
 
                         bottomContent = `
+                            <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Estadísticas de Equipo</h4>
+                            ${teamStatsHtml}
                             <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Líderes del Partido</h4>
                             <div class="game-leaders">${leadersHtml}</div>
                             <h4 style="text-align:center; color:#666; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem;">Anotaciones (Minuto a Minuto)</h4>
